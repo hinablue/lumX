@@ -72,8 +72,6 @@ angular.module('lumx.time-picker', [])
             }
 
             $scope.displayTime.hour = $scope.hour < 10 ? '0' + $scope.hour : $scope.hour;
-
-            updateModel();
         };
 
         $scope.nextHour = function()
@@ -85,8 +83,6 @@ angular.module('lumx.time-picker', [])
             }
 
             $scope.displayTime.hour = $scope.hour < 10 ? '0' + $scope.hour : $scope.hour;
-
-            updateModel();
         };
 
         $scope.previousMinute = function()
@@ -99,8 +95,6 @@ angular.module('lumx.time-picker', [])
             }
 
             $scope.displayTime.minute = $scope.minute < 10 ? '0' + $scope.minute : $scope.minute;
-
-            updateModel();
         };
 
         $scope.nextMinute = function()
@@ -113,8 +107,6 @@ angular.module('lumx.time-picker', [])
             }
 
             $scope.displayTime.minute = $scope.minute < 10 ? '0' + $scope.minute : $scope.minute;
-
-            updateModel();
         };
 
         $scope.openPicker = function()
@@ -146,6 +138,8 @@ angular.module('lumx.time-picker', [])
             $dateFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
+            $scope.model = $scope.displayTime.hour+':'+$scope.displayTime.minute;
+
             $timeout(function()
             {
                 $dateFilter.remove();
@@ -154,10 +148,6 @@ angular.module('lumx.time-picker', [])
                     .hide()
                     .appendTo($element);
             }, 600);
-        };
-
-        function updateModel() {
-            $scope.model = $scope.displayTime.hour+':'+$scope.displayTime.minute;
         };
     }])
     .directive('lxTimePicker', ['$log', function($log)
