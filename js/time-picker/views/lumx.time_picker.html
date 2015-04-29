@@ -1,0 +1,37 @@
+<div class="lx-time">
+    <lx-text-field class="lx-time-input" label="{{ label }}" ng-click="openPicker()">
+        <input type="text" ng-model="selectedTime.formatted" ng-disabled="true">
+    </lx-text-field>
+
+    <div class="lx-time-picker">
+        <div class="lx-time-picker__current-time">
+            <div class="lx-time-picker__current-hour">
+                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousHour()">
+                    <i class="mdi mdi--expand-less"></i>
+                </button>
+                <div class="lx-time-picker__hour">
+                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ displayTime.hour }}</span>
+                </div>
+                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextHour()">
+                    <i class="mdi mdi--expand-more"></i>
+                </button>
+            </div>
+            <div class="lx-time-picker__specator">:</div>
+            <div class="lx-time-picker__current-minute">
+                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousMinute()">
+                    <i class="mdi mdi--expand-less"></i>
+                </button>
+                <div class="lx-time-picker__minute">
+                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ displayTime.minute }}</span>
+                </div>
+                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextMinute()">
+                    <i class="mdi mdi--expand-more"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="lx-time-picker__actions">
+            <button class="btn btn--m btn--teal btn--flat" lx-ripple ng-click="closePicker()">Ok</button>
+        </div>
+    </div>
+</div>

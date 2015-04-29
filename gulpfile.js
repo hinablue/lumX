@@ -17,7 +17,8 @@ var paths = {
         'build/js/lumx.search-filter.tpl.js',
         'build/js/lumx.select.tpl.js',
         'build/js/lumx.tabs.tpl.js',
-        'build/js/lumx.date-picker.tpl.js'
+        'build/js/lumx.date-picker.tpl.js',
+        'build/js/lumx.time-picker.tpl.js'
     ],
     scss: [
         'scss/**/*.scss',
@@ -204,6 +205,19 @@ gulp.task('tpl:date-picker', function()
         .pipe(gulp.dest('build/js'));
 });
 
+gulp.task('tpl:time-picker', function()
+{
+    return gulp.src('js/time-picker/**/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'lumx.time-picker.tpl.js',
+            moduleName: 'lumx.time-picker',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js'));
+});
+
+
 gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker'], function()
 {
     return gulp.src(paths.js)
@@ -223,7 +237,7 @@ gulp.task('dist:fonts', function()
         .pipe(gulp.dest('dist/fonts'));
 });
 
-gulp.task('watch', ['lint', 'scss', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker'], function()
+gulp.task('watch', ['lint', 'scss', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker'], function()
 {
     watcherWithCache('lint', paths.scripts, ['lint']);
     watcherWithCache('scss', [paths.scss, 'demo/scss/**/*.scss'], ['scss']);
@@ -234,6 +248,7 @@ gulp.task('watch', ['lint', 'scss', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-
     watcherWithCache('tpl:select', 'js/select/**/*.html', ['tpl:select']);
     watcherWithCache('tpl:tabs', 'js/tabs/**/*.html', ['tpl:tabs']);
     watcherWithCache('tpl:date-picker', 'js/date-picker/**/*.html', ['tpl:date-picker']);
+    watcherWithCache('tpl:time-picker', 'js/time-picker/**/*.html', ['tpl:time-picker']);
 });
 
 gulp.task('auto-reload', function()

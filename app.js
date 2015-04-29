@@ -90,6 +90,9 @@ app.config(function($locationProvider, $routeProvider)
         when('/directives/date-picker', {
             templateUrl: '/demo/includes/directives/date-picker.html'
         }).
+        when('/directives/time-picker', {
+            templateUrl: '/demo/includes/directives/time-picker.html'
+        }).
         when('/directives/thumbnails', {
             templateUrl: '/demo/includes/directives/thumbnails.html'
         }).
