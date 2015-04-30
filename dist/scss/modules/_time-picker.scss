@@ -1,0 +1,99 @@
+///*------------------------------------*\
+//    #OBJECTS-TIME-PICKER
+//\*------------------------------------*/
+
+// Lx time base styles
+.lx-time {
+    position: relative;
+}
+
+.lx-time--fixed-label {
+
+    // Text field
+    .text-field {
+        padding-top: $base-spacing-unit;
+    }
+
+    .text-field--is-active {
+        .text-field__label {
+            display: none;
+        }
+    }
+
+        // Text field label
+        .text-field__label {
+            @include transform(none);
+        }
+}
+
+.lx-time--with-icon {
+    margin-left: $base-spacing-unit * 8;
+}
+
+// Time filter
+.lx-time-filter {
+    @include position(fixed, 0 0 0 0);
+    z-index: 999;
+    background-color: rgba(0,0,0,0.6);
+    opacity: 0;
+    @include transition-property(opacity);
+    @include transition-duration(0.6s);
+    @include transition-timing-function($ease-out-quint);
+}
+
+.lx-time-filter--is-shown {
+    opacity: 1;
+}
+
+// Time input
+.lx-time-input {
+    &,
+    input {
+        cursor: pointer !important;
+    }
+}
+
+// Time picker base styles
+.lx-time-picker {
+    display: none;
+    @include position(fixed, 30px null null 50%);
+    z-index: 1000;
+    width: 280px;
+    margin-left: -140px;
+    background-color: $white;
+    opacity: 0;
+    @include z-depth(3);
+    @include transform(translateY(-50px));
+    @include transition-property(opacity, transform);
+    @include transition-duration(0.6s);
+    @include transition-timing-function($ease-out-quint);
+}
+
+.lx-time-picker--is-shown {
+    opacity: 1;
+    @include transform(translateY(0));
+}
+
+.lx-time-picker__current-time {
+	text-align: center;
+	margin-top: 1rem;
+}
+	.lx-time-picker__specator {
+		@include font-size(48px);
+		display: inline-block;
+		font-weight: 600;
+		vertical-align: 45%;
+		color: $grey-500;
+	}
+	.lx-time-picker__current-hour,
+	.lx-time-picker__current-minute {
+		display: inline-block;
+		width: 30%;
+	}
+
+    // Time picker actions
+    .lx-time-picker__actions {
+        padding: $base-spacing-unit;
+        border-top: 1px solid $black-4;
+        text-align: center;
+    }
