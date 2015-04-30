@@ -21,6 +21,7 @@ var paths = {
         'build/js/templates/select_template.js',
         'build/js/templates/tabs_template.js',
         'build/js/templates/date-picker_template.js',
+        'build/js/templates/time-picker_template.js',
         'build/js/templates/progress_template.js'
     ],
     demo: [
@@ -247,7 +248,7 @@ gulp.task('tpl:time-picker', function()
     return gulp.src('modules/time-picker/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.time-picker.tpl.js',
+            output: 'time-picker_template.js',
             moduleName: 'lumx.time-picker',
             strip: 'views/'
         }))

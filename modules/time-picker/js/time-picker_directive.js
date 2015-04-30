@@ -1,5 +1,6 @@
 /* global angular */
 /* global moment */
+/* global navigator */
 'use strict'; // jshint ignore:line
 
 
@@ -82,7 +83,7 @@ angular.module('lumx.time-picker', [])
                 class: 'lx-time-filter'
             });
 
-            $timeFilter
+            $timePickerFilter
                 .appendTo('body')
                 .bind('click', function()
                 {
@@ -105,15 +106,13 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
-            // $scope.model = $scope.displayTime.hour+':'+$scope.displayTime.minute;
-
             $timeout(function()
             {
-                $dateFilter.remove();
+                $timePickerFilter.remove();
 
                 $timePicker
                     .hide()
-                    .appendTo($element);
+                    .appendTo($timePickerContainer);
             }, 600);
         };
 
@@ -133,7 +132,7 @@ angular.module('lumx.time-picker', [])
                 fixedLabel: '&',
                 icon: '@'
             },
-            templateUrl: 'time_picker.html',
+            templateUrl: 'time-picker.html',
             link: function(scope, element, attrs, ctrl)
             {
                 ctrl.init(element, checkLocale(attrs.locale));

@@ -55,7 +55,7 @@ angular.module('lumx.date-picker', [])
 
             $scope.days = [];
             $scope.daysOfWeek = [moment.weekdaysMin(1), moment.weekdaysMin(2), moment.weekdaysMin(3), moment.weekdaysMin(4), moment.weekdaysMin(5), moment.weekdaysMin(6), moment.weekdaysMin(0)];
-                
+
             $scope.years = [];
 
             for (var y = moment().year() - 100; y <= moment().year() + 100; y++)
@@ -151,7 +151,7 @@ angular.module('lumx.date-picker', [])
             $yearSelector.css({ height: calendarHeight });
 
             $scope.yearSelection = true;
-            
+
             $timeout(function()
             {
                 var $activeYear = angular.element('.lx-date-picker__year--is-active');
@@ -191,7 +191,7 @@ angular.module('lumx.date-picker', [])
             {
                 $scope.emptyLastDays.push({});
             }
-            
+
             $scope.days = days;
         }
     }])
