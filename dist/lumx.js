@@ -2971,6 +2971,8 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
+            $scope.selected.model = $scope.activeTime.format('HH:mm');
+
             $timeout(function()
             {
                 $timePickerFilter.remove();
