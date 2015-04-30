@@ -1,5 +1,217 @@
 # Changelog
 
+## v0.3.19:
+
+#### New features:
+ - dropdown: direction automatic
+
+
+## v0.3.18:
+
+#### New features:
+ - select: manage subheader
+
+
+## v0.3.17:
+
+#### New features:
+ - divider: add has divider class
+
+#### Bug fixes:
+ - list: put separator as pseudo element
+
+
+## v0.3.16:
+*No major changes.*
+
+
+## v0.3.15:
+
+#### Bug fixes:
+ - select: update icons unicode
+
+
+## v0.3.14:
+
+#### New features:
+ - flexbox: add flex-wrap attribute
+ - icons: add more size variants
+ - css core: add image rounded helper
+
+#### Bug fixes:
+ - radio: update unicode after in lib update
+ - checkbox: update unicode after in lib update
+
+#### Breaking changes:
+ - User should use typographic helpers to style content in content tile
+ - User should now use s flat icons in primary tile
+ - User should now use xs flat icons in secondary tile
+ - User must now use ‘img-round’ helper to apply circled effect on images
+ - in primary tile
+ - S size icons are now a little bit bigger in flat mode
+
+
+## v0.3.13:
+
+#### New features:
+ - progress: add circular progress directive
+
+
+## v0.3.12:
+
+#### New features:
+ - fab: click on fav and display flex
+ - date-picker: fixed label and icon features
+
+
+## v0.3.11:
+*No major changes.*
+
+
+## v0.3.10:
+
+#### Bug fixes:
+ - data table: add nowrap attribute to header
+
+
+## v0.3.9:
+
+#### Bug fixes:
+ - textarea: line height and height at init
+ - notification: applied correct position offset calculations on adding/removing notifications
+
+
+## v0.3.8:
+
+#### Bug fixes:
+ - data table: add divider instead of border
+
+
+## v0.3.7:
+
+#### New features:
+ - divider: add divider object
+
+#### Bug fixes:
+ - toolbar: align flex items in right area
+
+
+## v0.3.6:
+
+#### New features:
+ - date picker: observe locale attribute
+
+
+## v0.3.5:
+
+#### New features:
+ - flexbox: add flex align option
+
+#### Bug fixes:
+ - select: fix icons
+ - flexbox: use percents instead of integer flex
+
+#### Breaking changes:
+ - flex-order attribute is replaced by flex-item-order
+ - Buttons, dropdowns, etc were floated right into th right area. Now,
+ - with flexbox, user must invert order of elements in the DOM to be
+ - consistant.
+
+
+## v0.3.4:
+
+#### Bug fixes:
+ - flexbox: deal with responsive
+
+
+## v0.3.3:
+
+#### Bug fixes:
+ - bower: new main files in the json
+
+
+## v0.3.2:
+
+#### New features:
+ - date picker: year selector and locale attr
+
+#### Bug fixes:
+ - date picker: enhance year selector style
+ - data table: smooth scroll on mobile
+ - gulp file: watch right js path
+
+
+## v0.3.1:
+
+#### Bug fixes:
+ - icons: fix icons code after icons lib update
+
+
+## v0.3.0:
+
+#### New features:
+ - flexbox: replace grid system by flexbox
+
+#### Breaking changes:
+ - Form error has been deleted
+ - Icons have changed. Please checkout documentation
+ - New paths in the dist folder: dist/lumx.css, dist/lumx.js, dist/lumx.min.js, dist/scss/_lumx.scss
+ - grid system is removed in favor of flexbox
+
+
+## v0.2.54:
+
+#### Bug fixes:
+ - thumbnail: add thumbnail class
+
+
+## v0.2.53:
+
+#### Bug fixes:
+ - file input: fix metrics
+ - dialog: fix spaces
+
+#### Breaking changes:
+ - $md-spacing unit var is deprecated.
+ - $md-base-round is replaced by $base-round.
+ - $base-spacing-unit is smaller so spacing helpers are smaller.
+ - card markup has changed to be more flexible. Checkout demo.
+
+
+## v0.2.52:
+
+#### New features:
+ - dropdown: add active class on dropdown trigger
+
+#### Breaking changes:
+ - User must now use lx-thumbnail as an element, no more as an attribute.
+
+
+## v0.2.51:
+
+#### Bug fixes:
+ - date-picker: handle undefined date
+ - date-picker: ngModel always have a Date Object instead of Moment object
+
+
+## v0.2.50:
+
+#### New features:
+ - dropdown: add a direction option allowing dropup menus
+
+#### Bug fixes:
+ - grid: set outer container width to 100%
+
+
+## v0.2.49:
+
+#### New features:
+ - project: add version number in dist files
+
+#### Bug fixes:
+ - toolbar: remove margin on label
+
+
 ## v0.2.48:
 
 #### Bug fixes:
