@@ -98,6 +98,9 @@ angular
             when('/directives/date-picker', {
                 templateUrl: '/includes/modules/date-picker/date-picker.html'
             }).
+            when('/directives/time-picker', {
+                templateUrl: '/includes/modules/time-picker/time-picker.html'
+            }).
             when('/directives/thumbnails', {
                 templateUrl: '/includes/modules/thumbnail/thumbnail.html'
             }).
@@ -367,7 +370,8 @@ angular
         });
 
         $scope.datepicker = {
-            date: new Date()
+            date: new Date(),
+            time: '13:00'
         };
 
         var tabIndex = 4;

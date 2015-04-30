@@ -1,6 +1,11 @@
-<div class="lx-time">
+<div class="lx-time" ng-class="{ 'lx-date--fixed-label': fixedLabel(),
+                                 'lx-date--with-icon': icon && fixedLabel() }">
+
+    <div class="text-field__icon" ng-if="icon && fixedLabel() ">
+        <i class="mdi mdi-{{ icon }}"></i>
+    </div>
     <lx-text-field class="lx-time-input" label="{{ label }}" ng-click="openPicker()">
-        <input type="text" ng-model="selectedTime.formatted" ng-disabled="true">
+        <input type="text" ng-model="selected.model" ng-disabled="true">
     </lx-text-field>
 
     <div class="lx-time-picker">
@@ -10,7 +15,7 @@
                     <i class="mdi mdi--expand-less"></i>
                 </button>
                 <div class="lx-time-picker__hour">
-                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ displayTime.hour }}</span>
+                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.time).format('HH') }}</span>
                 </div>
                 <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextHour()">
                     <i class="mdi mdi--expand-more"></i>
@@ -22,7 +27,7 @@
                     <i class="mdi mdi--expand-less"></i>
                 </button>
                 <div class="lx-time-picker__minute">
-                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ displayTime.minute }}</span>
+                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.time).format('mm') }} }}</span>
                 </div>
                 <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextMinute()">
                     <i class="mdi mdi--expand-more"></i>
