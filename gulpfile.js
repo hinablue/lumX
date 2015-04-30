@@ -1,11 +1,8 @@
 var gulp = require('gulp'),
     minimist = require('minimist'),
-    spawn = require('child_process').spawn,
-    merge = require('merge-stream'),
     summary = require('jshint-summary'),
+    del = require('del'),
     plugins = require('gulp-load-plugins')();
-
-var libs = 'libs';
 
 var paths = {
     js: [
@@ -35,14 +32,16 @@ var paths = {
     examples: [
         'modules/**/demo/**/*.html'
     ],
-    css: ['build/**/*.css'],
-    fonts: 'fonts/**/*'
+    libs: [
+        'libs/**/*'
+    ]
 };
 
 function watcherWithCache(name, src, tasks)
 {
     var watcher = gulp.watch(src, tasks);
-    watcher.on('change', function (event)
+
+    watcher.on('change', function(event)
     {
         if (event.type === 'deleted')
         {
@@ -61,25 +60,14 @@ var knownOptions =
 var options = minimist(process.argv.slice(2), knownOptions);
 
 // Clean
-gulp.task('clean:build', function()
+gulp.task('clean:build', function(cb)
 {
-    return gulp.src('build/*', { read: false })
-        .pipe(plugins.plumber())
-        .pipe(plugins.rimraf());
+    del(['build/*'], cb);
 });
 
-gulp.task('clean:dist', function()
+gulp.task('clean:dist', function(cb)
 {
-    return gulp.src('dist/*', { read: false })
-        .pipe(plugins.plumber())
-        .pipe(plugins.rimraf());
-});
-
-gulp.task('clean:css', function()
-{
-    return gulp.src('css/**/*.css', { read: false })
-        .pipe(plugins.plumber())
-        .pipe(plugins.rimraf());
+    del(['dist/*'], cb);
 });
 
 
@@ -92,7 +80,12 @@ gulp.task('lint', function()
         .pipe(plugins.jshint())
         .pipe(plugins.jshint.reporter('jshint-summary'))
         .pipe(plugins.jshint.reporter('fail'))
-        .pipe(plugins.remember('lint'));
+        .pipe(plugins.remember('lint'))
+        .pipe(plugins.rename(function(path)
+        {
+            path.dirname = path.dirname.replace('/js', '');
+        }))
+        .pipe(gulp.dest('build/js'));
 });
 
 gulp.task('scss', function()
@@ -100,120 +93,154 @@ gulp.task('scss', function()
     return gulp.src('demo/scss/lumx.scss')
         .pipe(plugins.plumber())
         .pipe(plugins.rubySass())
-        // Gulp ruby sass doesn't handle disabling css map for Sass 3.4 and after
-        .pipe(plugins.removeLines({'filters': [/\/\*# sourceMappingURL=/]}))
-        .pipe(gulp.dest('demo/css'));
+        .pipe(gulp.dest('build'));
+});
+
+gulp.task('demo', function()
+{
+    return gulp.src(paths.demo)
+        .pipe(plugins.plumber())
+        .pipe(gulp.dest('build'));
+});
+
+gulp.task('examples', function()
+{
+    return gulp.src(paths.examples)
+        .pipe(plugins.plumber())
+        .pipe(plugins.rename(function(path)
+        {
+            path.dirname = path.dirname.replace('/demo', '');
+        }))
+        .pipe(gulp.dest('build/includes/modules'));
+});
+
+gulp.task('libs', function()
+{
+    return gulp.src(paths.libs)
+        .pipe(plugins.plumber())
+        .pipe(gulp.dest('build/libs'));
 });
 
 
 // Dist
-gulp.task('scss:move', function()
+gulp.task('scss:move-core', function()
 {
-    return gulp.src(['scss/**/*'])
+    return gulp.src(paths.scss[0])
         .pipe(gulp.dest('dist/scss'));
 });
 
-gulp.task('scss:paths', ['scss:move'], function()
+gulp.task('scss:move-modules', function()
 {
-    return gulp.src(['dist/scss/main/_lumx.scss'])
+    return gulp.src(paths.scss[1])
+        .pipe(plugins.rename(function(path)
+        {
+            path.dirname = '/';
+        }))
+        .pipe(gulp.dest('dist/scss/modules'));
+});
+
+gulp.task('scss:paths', ['scss:move-core', 'scss:move-modules'], function()
+{
+    return gulp.src(['dist/scss/_lumx.scss'])
         .pipe(plugins.plumber())
-        .pipe(plugins.replace(/..\/..\/libs/g, '../../../..'))
-        .pipe(gulp.dest('dist/scss/main'));
+        .pipe(plugins.replace(/..\/..\/libs/g, '../../..'))
+        .pipe(plugins.replace(/..\/..\/modules\/[^\/]*\/scss/g, 'modules'))
+        .pipe(gulp.dest('dist/scss'));
 });
 
 gulp.task('dist:css', ['scss:paths'], function()
 {
-    return gulp.src(['scss/main/_lumx.scss'])
+    return gulp.src(['core/scss/_lumx.scss'])
         .pipe(plugins.plumber())
         .pipe(plugins.rename('lumx.scss'))
         .pipe(plugins.rubySass())
         .pipe(plugins.minifyCss({ keepSpecialComments: 0 }))
         .pipe(plugins.insert.prepend('/*\n LumX ' + options.version + '\n (c) 2014-' + new Date().getFullYear() + ' LumApps http://ui.lumapps.com\n License: MIT\n*/\n'))
-        .pipe(gulp.dest('dist/css'));
+        .pipe(gulp.dest('dist'));
 });
 
 gulp.task('tpl:dropdown', function()
 {
-    return gulp.src('js/dropdown/**/*.html')
+    return gulp.src('modules/dropdown/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.dropdown.tpl.js',
+            output: 'dropdown_template.js',
             moduleName: 'lumx.dropdown',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 gulp.task('tpl:file-input', function()
 {
-    return gulp.src('js/file-input/**/*.html')
+    return gulp.src('modules/file-input/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.file-input.tpl.js',
+            output: 'file-input_template.js',
             moduleName: 'lumx.file-input',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 gulp.task('tpl:text-field', function()
 {
-    return gulp.src('js/text-field/**/*.html')
+    return gulp.src('modules/text-field/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.text-field.tpl.js',
+            output: 'text-field_template.js',
             moduleName: 'lumx.text-field',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 gulp.task('tpl:search-filter', function()
 {
-    return gulp.src('js/search-filter/**/*.html')
+    return gulp.src('modules/search-filter/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.search-filter.tpl.js',
+            output: 'search-filter_template.js',
             moduleName: 'lumx.search-filter',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 gulp.task('tpl:select', function()
 {
-    return gulp.src('js/select/**/*.html')
+    return gulp.src('modules/select/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.select.tpl.js',
+            output: 'select_template.js',
             moduleName: 'lumx.select',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 gulp.task('tpl:tabs', function()
 {
-    return gulp.src('js/tabs/**/*.html')
+    return gulp.src('modules/tabs/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.tabs.tpl.js',
+            output: 'tabs_template.js',
             moduleName: 'lumx.tabs',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 gulp.task('tpl:date-picker', function()
 {
-    return gulp.src('js/date-picker/**/*.html')
+    return gulp.src('modules/date-picker/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.date-picker.tpl.js',
+            output: 'date-picker_template.js',
             moduleName: 'lumx.date-picker',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 gulp.task('tpl:time-picker', function()
@@ -227,7 +254,6 @@ gulp.task('tpl:time-picker', function()
         }))
         .pipe(gulp.dest('build/js/templates'));
 });
-
 
 gulp.task('tpl:progress', function()
 {
@@ -243,26 +269,26 @@ gulp.task('tpl:progress', function()
 
 gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker', 'tpl:progress'], function()
 {
-    return gulp.src(paths.js)
+    return gulp.src(paths.js.concat(paths.templates))
         .pipe(plugins.plumber())
         .pipe(plugins.concat('lumx.js'))
         .pipe(plugins.insert.prepend('/*\n LumX ' + options.version + '\n (c) 2014-' + new Date().getFullYear() + ' LumApps http://ui.lumapps.com\n License: MIT\n*/\n'))
-        .pipe(gulp.dest('dist/js'))
+        .pipe(gulp.dest('dist'))
         .pipe(plugins.uglify())
         .pipe(plugins.insert.prepend('/*\n LumX ' + options.version + '\n (c) 2014-' + new Date().getFullYear() + ' LumApps http://ui.lumapps.com\n License: MIT\n*/\n'))
         .pipe(plugins.rename('lumx.min.js'))
-        .pipe(gulp.dest('dist/js'));
+        .pipe(gulp.dest('dist'));
 });
 
-gulp.task('dist:fonts', function()
-{
-    return gulp.src(paths.fonts)
-        .pipe(gulp.dest('dist/fonts'));
+gulp.task('serve', ['watch'], function() {
+    return plugins.connect.server({
+        root: 'build'
+    });
 });
 
 gulp.task('watch', ['build'], function()
 {
-    watcherWithCache('lint', paths.scripts, ['lint']);
+    watcherWithCache('lint', paths.js, ['lint']);
     watcherWithCache('scss', [paths.scss, 'demo/scss/**/*.scss'], ['scss']);
     watcherWithCache('demo', paths.demo, ['demo']);
     watcherWithCache('examples', paths.examples, ['examples']);
@@ -278,15 +304,13 @@ gulp.task('watch', ['build'], function()
     watcherWithCache('tpl:progress', 'modules/progress/views/*.html', ['tpl:progress']);
 });
 
-gulp.task('clean', ['clean:build', 'clean:dist', 'clean:css']);
+gulp.task('clean', ['clean:build', 'clean:dist']);
 
-gulp.task('build', ['lint', 'scss', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker', 'tpl:progress']);
+gulp.task('build', ['lint', 'scss', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress']);
 gulp.task('dist', ['clean:dist'], function()
 {
-   // Bad practices, but best way to force clean before executing all the tasks
    gulp.start('dist:css');
    gulp.start('dist:scripts');
-   gulp.start('dist:fonts');
 });
 
-gulp.task('default', ['auto-reload']);
+gulp.task('default', ['watch']);
