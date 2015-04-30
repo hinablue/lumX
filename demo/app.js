@@ -98,6 +98,9 @@ angular
             when('/directives/date-picker', {
                 templateUrl: '/includes/modules/date-picker/date-picker.html'
             }).
+            when('/directives/time-picker', {
+                templateUrl: '/includes/modules/time-picker/time-picker.html'
+            }).
             when('/directives/thumbnails', {
                 templateUrl: '/includes/modules/thumbnail/thumbnail.html'
             }).
@@ -132,23 +135,23 @@ angular
             }
         };
 
-        $http.get('https://api.github.com/repos/lumapps/lumx/git/refs/heads/master').success(function(master)
-        {
-            $http.get(master.object.url).success(function(lastCommit)
-            {
-                $scope.repo.lastCommit.date = new Date(lastCommit.author.date);
-                $scope.repo.lastCommit.sha = lastCommit.sha;
-                $scope.repo.lastCommit.url = lastCommit.html_url;
-            });
-        });
+        // $http.get('https://api.github.com/repos/lumapps/lumx/git/refs/heads/master').success(function(master)
+        // {
+        //     $http.get(master.object.url).success(function(lastCommit)
+        //     {
+        //         $scope.repo.lastCommit.date = new Date(lastCommit.author.date);
+        //         $scope.repo.lastCommit.sha = lastCommit.sha;
+        //         $scope.repo.lastCommit.url = lastCommit.html_url;
+        //     });
+        // });
 
-        $http.get('https://api.github.com/repos/lumapps/lumx/releases').success(function(lastReleases)
-        {
-            var lastRelease = lastReleases[0] ? lastReleases[0] : lastReleases;
-            $scope.repo.lastRelease.name = lastRelease.name;
-            $scope.repo.lastRelease.tag = lastRelease.tag_name;
-            $scope.repo.lastRelease.url = lastRelease.zipball_url;
-        });
+        // $http.get('https://api.github.com/repos/lumapps/lumx/releases').success(function(lastReleases)
+        // {
+        //     var lastRelease = lastReleases[0] ? lastReleases[0] : lastReleases;
+        //     $scope.repo.lastRelease.name = lastRelease.name;
+        //     $scope.repo.lastRelease.tag = lastRelease.tag_name;
+        //     $scope.repo.lastRelease.url = lastRelease.zipball_url;
+        // });
 
         $scope.people = [
             { name: 'Adam',      email: 'adam@email.com',      age: 10 },
@@ -367,7 +370,8 @@ angular
         });
 
         $scope.datepicker = {
-            date: new Date()
+            date: new Date(),
+            time: '13:00'
         };
 
         var tabIndex = 4;

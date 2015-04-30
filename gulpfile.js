@@ -9,20 +9,31 @@ var libs = 'libs';
 
 var paths = {
     js: [
-        'js/**/*.js',
-        'demo/js/**/*.js',
-        'build/js/lumx.dropdown.tpl.js',
-        'build/js/lumx.file-input.tpl.js',
-        'build/js/lumx.text-field.tpl.js',
-        'build/js/lumx.search-filter.tpl.js',
-        'build/js/lumx.select.tpl.js',
-        'build/js/lumx.tabs.tpl.js',
-        'build/js/lumx.date-picker.tpl.js',
-        'build/js/lumx.time-picker.tpl.js'
+        'core/js/**/*.js',
+        'modules/**/*.js'
     ],
     scss: [
-        'scss/**/*.scss',
-        'demo/scss/**/*.scss'
+        'core/scss/**/*.scss',
+        'modules/**/*.scss'
+    ],
+    templates: [
+        'build/js/templates/dropdown_template.js',
+        'build/js/templates/file-input_template.js',
+        'build/js/templates/text-field_template.js',
+        'build/js/templates/search-filter_template.js',
+        'build/js/templates/select_template.js',
+        'build/js/templates/tabs_template.js',
+        'build/js/templates/date-picker_template.js',
+        'build/js/templates/time-picker_template.js',
+        'build/js/templates/progress_template.js'
+    ],
+    demo: [
+        'demo/**/*',
+        '!demo/scss/**/*',
+        '!demo/scss'
+    ],
+    examples: [
+        'modules/**/demo/**/*.html'
     ],
     css: ['build/**/*.css'],
     fonts: 'fonts/**/*'
@@ -207,18 +218,30 @@ gulp.task('tpl:date-picker', function()
 
 gulp.task('tpl:time-picker', function()
 {
-    return gulp.src('js/time-picker/**/*.html')
+    return gulp.src('modules/time-picker/views/*.html')
         .pipe(plugins.plumber())
         .pipe(plugins.templatecache({
-            output: 'lumx.time-picker.tpl.js',
+            output: 'time-picker_template.js',
             moduleName: 'lumx.time-picker',
             strip: 'views/'
         }))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/js/templates'));
 });
 
 
-gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker'], function()
+gulp.task('tpl:progress', function()
+{
+    return gulp.src('modules/progress/views/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'progress_template.js',
+            moduleName: 'lumx.progress',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js/templates'));
+});
+
+gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker', 'tpl:progress'], function()
 {
     return gulp.src(paths.js)
         .pipe(plugins.plumber())
@@ -237,41 +260,27 @@ gulp.task('dist:fonts', function()
         .pipe(gulp.dest('dist/fonts'));
 });
 
-gulp.task('watch', ['lint', 'scss', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker'], function()
+gulp.task('watch', ['build'], function()
 {
     watcherWithCache('lint', paths.scripts, ['lint']);
     watcherWithCache('scss', [paths.scss, 'demo/scss/**/*.scss'], ['scss']);
-    watcherWithCache('tpl:dropdown', 'js/dropdown/**/*.html', ['tpl:dropdown']);
-    watcherWithCache('tpl:file-input', 'js/file-input/**/*.html', ['tpl:file-input']);
-    watcherWithCache('tpl:text-field', 'js/text-field/**/*.html', ['tpl:text-field']);
-    watcherWithCache('tpl:search-filter', 'js/search-filter/**/*.html', ['tpl:search-filter']);
-    watcherWithCache('tpl:select', 'js/select/**/*.html', ['tpl:select']);
-    watcherWithCache('tpl:tabs', 'js/tabs/**/*.html', ['tpl:tabs']);
-    watcherWithCache('tpl:date-picker', 'js/date-picker/**/*.html', ['tpl:date-picker']);
-    watcherWithCache('tpl:time-picker', 'js/time-picker/**/*.html', ['tpl:time-picker']);
-});
-
-gulp.task('auto-reload', function()
-{
-    var p;
-
-    gulp.watch('gulpfile.js', spawnChildren);
-    spawnChildren();
-
-    function spawnChildren(e)
-    {
-        // kill previous spawned process
-        if(p)
-        {
-            p.kill();
-        }
-
-        p = spawn('gulp', ['watch'], {stdio: 'inherit'});
-    }
+    watcherWithCache('demo', paths.demo, ['demo']);
+    watcherWithCache('examples', paths.examples, ['examples']);
+    watcherWithCache('libs', paths.libs, ['libs']);
+    watcherWithCache('tpl:dropdown', 'modules/dropdown/views/*.html', ['tpl:dropdown']);
+    watcherWithCache('tpl:file-input', 'modules/file-input/views/*.html', ['tpl:file-input']);
+    watcherWithCache('tpl:text-field', 'modules/text-field/views/*.html', ['tpl:text-field']);
+    watcherWithCache('tpl:search-filter', 'modules/search-filter/views/*.html', ['tpl:search-filter']);
+    watcherWithCache('tpl:select', 'modules/select/views/*.html', ['tpl:select']);
+    watcherWithCache('tpl:tabs', 'modules/tabs/views/*.html', ['tpl:tabs']);
+    watcherWithCache('tpl:date-picker', 'modules/date-picker/views/*.html', ['tpl:date-picker']);
+    watcherWithCache('tpl:time-picker', 'modules/time-picker/views/*.html', ['tpl:time-picker']);
+    watcherWithCache('tpl:progress', 'modules/progress/views/*.html', ['tpl:progress']);
 });
 
 gulp.task('clean', ['clean:build', 'clean:dist', 'clean:css']);
 
+gulp.task('build', ['lint', 'scss', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker', 'tpl:progress']);
 gulp.task('dist', ['clean:dist'], function()
 {
    // Bad practices, but best way to force clean before executing all the tasks

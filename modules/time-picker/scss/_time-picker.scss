@@ -2,6 +2,34 @@
 //    #OBJECTS-TIME-PICKER
 //\*------------------------------------*/
 
+// Lx time base styles
+.lx-time {
+    position: relative;
+}
+
+.lx-time--fixed-label {
+
+    // Text field
+    .text-field {
+        padding-top: $base-spacing-unit;
+    }
+
+    .text-field--is-active {
+        .text-field__label {
+            display: none;
+        }
+    }
+
+        // Text field label
+        .text-field__label {
+            @include transform(none);
+        }
+}
+
+.lx-time--with-icon {
+    margin-left: $base-spacing-unit * 8;
+}
+
 // Time filter
 .lx-time-filter {
     @include position(fixed, 0 0 0 0);
@@ -63,9 +91,9 @@
 		width: 30%;
 	}
 
-// Time picker actions
-.lx-time-picker__actions {
-    padding: $md-spacing-unit;
-    padding-top: halve($md-spacing-unit);
-    text-align: right;
-}
+    // Time picker actions
+    .lx-time-picker__actions {
+        padding: $base-spacing-unit;
+        border-top: 1px solid $black-4;
+        text-align: center;
+    }
