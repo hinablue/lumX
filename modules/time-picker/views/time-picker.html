@@ -15,7 +15,7 @@
                     <i class="mdi mdi-chevron-up"></i>
                 </button>
                 <div class="lx-time-picker__hour">
-                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.time).format('HH') }}</span>
+                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format('HH') }}</span>
                 </div>
                 <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextHour()">
                     <i class="mdi mdi-chevron-down"></i>
@@ -27,7 +27,7 @@
                     <i class="mdi mdi-chevron-up"></i>
                 </button>
                 <div class="lx-time-picker__minute">
-                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.time).format('mm') }} }}</span>
+                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format('mm') }} }}</span>
                 </div>
                 <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextMinute()">
                     <i class="mdi mdi-chevron-down"></i>

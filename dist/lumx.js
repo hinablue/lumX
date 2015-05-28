@@ -2900,16 +2900,16 @@ angular.module('lumx.time-picker', [])
             {
                 $scope.selected = {
                     model: moment(moment().format('YYYY/MM/DD')+' '+$scope.model).format('HH:mm'),
-                    time: moment(moment().format('YYYY/MM/DD')+' '+$scope.model)
+                    date: moment(moment().format('YYYY/MM/DD')+' '+$scope.model)
                 };
 
-                $scope.activeTime = moment(moment().format('YYYY/MM/DD')+' '+$scope.model);
+                $scope.activeTime = moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00');
             }
             else
             {
                 $scope.selected = {
                     model: undefined,
-                    time: new Date()
+                    date: new Date()
                 };
 
                 $scope.activeTime = moment();
@@ -2971,6 +2971,7 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
+            $scope.selected.date = $scope.activeTime;
             $scope.selected.model = $scope.activeTime.format('HH:mm');
 
             $timeout(function()
@@ -2984,7 +2985,7 @@ angular.module('lumx.time-picker', [])
         };
 
         function generateTimetable() {
-            $scope.selected.time = $scope.activeTime;
+            $scope.selected.date = $scope.activeTime;
             $scope.selected.model = $scope.activeTime.format('HH:mm');
         }
     }])
@@ -3402,7 +3403,7 @@ angular.module("lumx.time-picker").run(['$templateCache', function(a) { a.put('t
     '                    <i class="mdi mdi-chevron-up"></i>\n' +
     '                </button>\n' +
     '                <div class="lx-time-picker__hour">\n' +
-    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.time).format(\'HH\') }}</span>\n' +
+    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format(\'HH\') }}</span>\n' +
     '                </div>\n' +
     '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextHour()">\n' +
     '                    <i class="mdi mdi-chevron-down"></i>\n' +
@@ -3414,7 +3415,7 @@ angular.module("lumx.time-picker").run(['$templateCache', function(a) { a.put('t
     '                    <i class="mdi mdi-chevron-up"></i>\n' +
     '                </button>\n' +
     '                <div class="lx-time-picker__minute">\n' +
-    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.time).format(\'mm\') }} }}</span>\n' +
+    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format(\'mm\') }} }}</span>\n' +
     '                </div>\n' +
     '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextMinute()">\n' +
     '                    <i class="mdi mdi-chevron-down"></i>\n' +

@@ -35,16 +35,16 @@ angular.module('lumx.time-picker', [])
             {
                 $scope.selected = {
                     model: moment(moment().format('YYYY/MM/DD')+' '+$scope.model).format('HH:mm'),
-                    time: moment(moment().format('YYYY/MM/DD')+' '+$scope.model)
+                    date: moment(moment().format('YYYY/MM/DD')+' '+$scope.model)
                 };
 
-                $scope.activeTime = moment(moment().format('YYYY/MM/DD')+' '+$scope.model);
+                $scope.activeTime = moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00');
             }
             else
             {
                 $scope.selected = {
                     model: undefined,
-                    time: new Date()
+                    date: new Date()
                 };
 
                 $scope.activeTime = moment();
@@ -106,6 +106,7 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
+            $scope.selected.date = $scope.activeTime;
             $scope.selected.model = $scope.activeTime.format('HH:mm');
 
             $timeout(function()
@@ -119,7 +120,7 @@ angular.module('lumx.time-picker', [])
         };
 
         function generateTimetable() {
-            $scope.selected.time = $scope.activeTime;
+            $scope.selected.date = $scope.activeTime;
             $scope.selected.model = $scope.activeTime.format('HH:mm');
         }
     }])
