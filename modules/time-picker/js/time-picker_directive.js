@@ -34,8 +34,8 @@ angular.module('lumx.time-picker', [])
             if (angular.isDefined($scope.model))
             {
                 $scope.selected = {
-                    model: moment(moment().format('YYYY/MM/DD')+' '+$scope.model).format('HH:mm'),
-                    date: moment(moment().format('YYYY/MM/DD')+' '+$scope.model)
+                    model: moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00').format('HH:mm'),
+                    date: moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00')
                 };
 
                 $scope.activeTime = moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00');
@@ -106,8 +106,7 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
-            $scope.selected.date = $scope.activeTime;
-            $scope.selected.model = $scope.activeTime.format('HH:mm');
+            $scope.model = $scope.activeTime.toDate();
 
             $timeout(function()
             {

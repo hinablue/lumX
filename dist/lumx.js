@@ -2899,8 +2899,8 @@ angular.module('lumx.time-picker', [])
             if (angular.isDefined($scope.model))
             {
                 $scope.selected = {
-                    model: moment(moment().format('YYYY/MM/DD')+' '+$scope.model).format('HH:mm'),
-                    date: moment(moment().format('YYYY/MM/DD')+' '+$scope.model)
+                    model: moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00').format('HH:mm'),
+                    date: moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00')
                 };
 
                 $scope.activeTime = moment(moment().format('YYYY/MM/DD')+' '+$scope.model+':00');
@@ -2971,8 +2971,7 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
-            $scope.selected.date = $scope.activeTime;
-            $scope.selected.model = $scope.activeTime.format('HH:mm');
+            $scope.model = $scope.activeTime.toDate();
 
             $timeout(function()
             {
@@ -3392,10 +3391,13 @@ angular.module("lumx.time-picker").run(['$templateCache', function(a) { a.put('t
     '    <div class="text-field__icon" ng-if="icon && fixedLabel() ">\n' +
     '        <i class="mdi mdi-{{ icon }}"></i>\n' +
     '    </div>\n' +
+    '\n' +
+    '    <!-- Time picker input -->\n' +
     '    <lx-text-field class="lx-time-input" label="{{ label }}" ng-click="openPicker()">\n' +
     '        <input type="text" ng-model="selected.model" ng-disabled="true">\n' +
     '    </lx-text-field>\n' +
     '\n' +
+    '    <!-- Time picker -->\n' +
     '    <div class="lx-time-picker">\n' +
     '        <div class="lx-time-picker__current-time">\n' +
     '            <div class="lx-time-picker__current-hour">\n' +
