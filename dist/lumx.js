@@ -2896,7 +2896,7 @@ angular.module('lumx.time-picker', [])
 
             moment.locale(activeLocale);
 
-            if (angular.isDefined($scope.model) && $scope.model.test(/\d{2}:\d{2}/gi))
+            if (angular.isDefined($scope.model) && /\d{2}:\d{2}/gi.test($scope.model))
             {
                 var time = $scope.model.split(':');
                 $scope.selected = {
