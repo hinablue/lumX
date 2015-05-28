@@ -2388,13 +2388,18 @@ angular.module('lumx.tabs', [])
     {
         var tabs = [],
             links,
-            indicator;
+            linksContainer,
+            tabTags,
+            indicator,
+            paginationTranslation = 0;
 
         $scope.activeTab = angular.isUndefined($scope.activeTab) ? 0 : $scope.activeTab;
 
         this.init = function(element)
         {
             links = element.find('.tabs__links');
+            linksContainer = links.parent('.tabs');
+            tabTags = links.find('.tabs-link');
             indicator = element.find('.tabs__indicator');
         };
 
@@ -2456,6 +2461,164 @@ angular.module('lumx.tabs', [])
             }
         };
 
+        function isPaginationActive()
+        {
+            var tabsWidth = links.outerWidth();
+            var tabsVisibleWidth = linksContainer.outerWidth();
+
+            return tabsWidth > tabsVisibleWidth;
+        }
+
+        function getFirstHiddenLeftTab()
+        {
+            var leftBorderContainer = linksContainer.offset().left;
+
+            var firstTabHidden;
+
+            for (var i = 0; i < tabTags.length; i++)
+            {
+                var leftBorderTab = angular.element(tabTags[i]).offset().left;
+
+                if (!firstTabHidden && leftBorderTab > (leftBorderContainer - linksContainer.outerWidth()) && leftBorderTab < leftBorderContainer)
+                {
+                    firstTabHidden = angular.element(tabTags[i]);
+                    break;
+                }
+            }
+
+            return firstTabHidden;
+        }
+
+        function getFirstHiddenRightTab()
+        {
+            var rightBorderContainer = linksContainer.offset().left + linksContainer.outerWidth();
+
+            var firstTabHidden;
+
+            for (var i = 0; i < tabTags.length; i++)
+            {
+                var tabElement = angular.element(tabTags[i]);
+                var rightBorderTab = tabElement.offset().left + tabElement.outerWidth();
+
+                if (!firstTabHidden && rightBorderTab > rightBorderContainer)
+                {
+                    firstTabHidden = angular.element(tabTags[i]);
+                    break;
+                }
+            }
+
+            return firstTabHidden;
+        }
+
+        function getFirstVisibleTab()
+        {
+            var leftBorderContainer = linksContainer.offset().left;
+
+            var firstTabVisible;
+
+            for (var i = 0; i < tabTags.length; i++)
+            {
+                var leftBorderTab = angular.element(tabTags[i]).offset().left;
+                if (!firstTabVisible && leftBorderTab > leftBorderContainer)
+                {
+                    firstTabVisible = tabTags[i];
+                    break;
+                }
+            }
+
+            return angular.element(firstTabVisible);
+        }
+
+        function isPaginationLeftDisabled ()
+        {
+            return getFirstHiddenLeftTab() === undefined;
+        }
+
+        function isPaginationRightDisabled ()
+        {
+            return getFirstHiddenRightTab() === undefined;
+        }
+
+        function showNextPage()
+        {
+            var firstTabHidden = getFirstHiddenRightTab();
+
+            var deltaX = linksContainer.offset().left - firstTabHidden.offset().left;
+
+            // Take in account the width of pagination button
+            deltaX += 41;
+
+            paginationTranslation += deltaX;
+
+            var transformProperties = {
+                translateX: paginationTranslation + 'px'
+            };
+
+            var animationProperties = {
+                duration: 200
+            };
+
+            links.velocity(transformProperties, animationProperties);
+
+            indicator.velocity(transformProperties, animationProperties);
+
+            $timeout(function () {
+                $scope.$apply();
+            }, 201);
+        }
+
+        function showPrevPage()
+        {
+            var firstTabHidden = getFirstHiddenLeftTab();
+
+            var deltaX = linksContainer.offset().left - firstTabHidden.offset().left;
+
+            // Take in account width of pagination button
+            deltaX += 41;
+
+            paginationTranslation += deltaX;
+
+            var transformProperties = {
+                translateX: paginationTranslation + 'px'
+            };
+
+            var animationProperties = {
+                duration: 200
+            };
+
+            links.velocity(transformProperties, animationProperties);
+
+            indicator.velocity(transformProperties, animationProperties);
+
+            $timeout(function () {
+                $scope.$apply();
+            }, 201);
+        }
+
+        function repositionPage()
+        {
+            var leftContainer = linksContainer.offset().left;
+
+            var firstTabVisible = getFirstVisibleTab();
+
+            var deltaX = leftContainer - firstTabVisible.offset().left + 41;
+
+            paginationTranslation += deltaX;
+
+            var transformProperties = {
+                translateX: paginationTranslation + 'px'
+            };
+
+            var animationProperties = {
+                duration: 10
+            };
+
+            links.velocity(transformProperties, animationProperties);
+
+            indicator.velocity(transformProperties, animationProperties);
+
+        }
+
         function getTabs()
         {
             return tabs;
@@ -2471,8 +2634,8 @@ angular.module('lumx.tabs', [])
 
         function setLinksColor(newTab)
         {
-            links.find('.tabs-link').removeClass('tc-' + $scope.indicator);
-            links.find('.tabs-link').eq(newTab).addClass('tc-' + $scope.indicator);
+            tabTags.removeClass('tc-' + $scope.indicator);
+            tabTags.eq(newTab).addClass('tc-' + $scope.indicator);
         }
 
         function setIndicatorPosition(oldTab)
@@ -2488,11 +2651,11 @@ angular.module('lumx.tabs', [])
                 direction = 'left';
             }
 
-            var tabsWidth = links.outerWidth(),
+            var tabsVisibleWidth = links.parent('.tabs').outerWidth(),
                 activeTab = links.find('.tabs-link').eq($scope.activeTab),
                 activeTabWidth = activeTab.outerWidth(),
                 indicatorLeft = activeTab.position().left,
-                indicatorRight = tabsWidth - (indicatorLeft + activeTabWidth);
+                indicatorRight = tabsVisibleWidth - (indicatorLeft + activeTabWidth);
 
             if (angular.isUndefined(oldTab))
             {
@@ -2543,14 +2706,44 @@ angular.module('lumx.tabs', [])
             }
         });
 
+        // Watch tabs and go to previous page if there is no more tabs currently displayed
+        $scope.$watchCollection(function() { return tabs; }, function ()
+        {
+
+            $timeout(function ()
+            {
+                tabTags = links.find('.tabs-link');
+            });
+
+            if (isPaginationActive())
+            {
+                var firstTabVisible = getFirstVisibleTab();
+
+                if (angular.equals(firstTabVisible[0], tabTags[tabTags.length - 1]))
+                {
+                    showPrevPage();
+                }
+            }
+        });
+
         angular.element($window).bind('resize', function()
         {
             setIndicatorPosition();
+
+            if (isPaginationActive())
+            {
+                repositionPage();
+            }
         });
 
         // Public API
         $scope.getTabs = getTabs;
         $scope.setActiveTab = setActiveTab;
+        $scope.isPaginationActive = isPaginationActive;
+        $scope.isPaginationLeftDisabled = isPaginationLeftDisabled;
+        $scope.isPaginationRightDisabled = isPaginationRightDisabled;
+        $scope.showNextPage = showNextPage;
+        $scope.showPrevPage = showPrevPage;
     }])
     .directive('lxTabs', function()
     {
@@ -2567,7 +2760,9 @@ angular.module('lumx.tabs', [])
                 indicator: '@',
                 noDivider: '@',
                 zDepth: '@',
-                layout: '@'
+                layout: '@',
+                showIconAndHeading: '@',
+                iconPrefix: '@'
             },
             link: function(scope, element, attrs, ctrl)
             {
@@ -2596,6 +2791,11 @@ angular.module('lumx.tabs', [])
                 if (angular.isUndefined(scope.layout))
                 {
                     scope.layout = 'full';
+                }
+
+                if (angular.isUndefined(scope.iconPrefix))
+                {
+                    scope.iconPrefix = 'mdi mdi-';
                 }
             }
         };
@@ -3292,18 +3492,34 @@ angular.module("lumx.select").run(['$templateCache', function(a) { a.put('select
 	 }]);
 angular.module("lumx.tabs").run(['$templateCache', function(a) { a.put('tabs.html', '<div class="tabs tabs--theme-{{ linksTc }} tabs--layout-{{ layout }}"\n' +
     '     ng-class="{ \'tabs--no-divider\': noDivider }">\n' +
-    '    <ul class="tabs__links bgc-{{ linksBgc }} z-depth{{ zDepth }}">\n' +
+    '\n' +
+    '    <button class="tabs__pagination-left btn btn--m bgc-{{ linksBgc }}"\n' +
+    '            ng-click="showPrevPage()"\n' +
+    '            ng-if="isPaginationActive()"\n' +
+    '            ng-disabled="isPaginationLeftDisabled()">\n' +
+    '      <i class="mdi mdi-chevron-left"></i>\n' +
+    '    </button>\n' +
+    '\n' +
+    '    <ul class="tabs__links bgc-{{ linksBgc }} z-depth{{ zDepth }}"\n' +
+    '        ng-class="{\'tabs__pagination-padding\': isPaginationActive()}">\n' +
     '        <li ng-repeat="tab in getTabs()">\n' +
     '            <a lx-tab-link\n' +
     '               class="tabs-link"\n' +
     '               ng-class="{ \'tabs-link--is-active\': $index === activeTab }"\n' +
     '               ng-click="setActiveTab($index)"\n' +
     '               lx-ripple="{{ indicator }}">\n' +
-    '               <span ng-if="tab.icon !== undefined"><i class="mdi mdi-{{ tab.icon }}"></i></span>\n' +
-    '               <span ng-if="tab.icon === undefined">{{ tab.heading }}</i></span>\n' +
+    '               <span ng-if="tab.icon !== undefined"><i class="{{iconPrefix}}{{ tab.icon }}"></i></span>\n' +
+    '               <span ng-if="tab.icon === undefined || showIconAndHeading">{{ tab.heading }}</i></span>\n' +
     '            </a>\n' +
     '        </li>\n' +
     '    </ul>\n' +
+    '\n' +
+    '    <button class="tabs__pagination-right btn btn--m bgc-{{ linksBgc }}"\n' +
+    '            ng-click="showNextPage()"\n' +
+    '            ng-if="isPaginationActive()"\n' +
+    '            ng-disabled="isPaginationRightDisabled()">\n' +
+    '      <i class="mdi mdi-chevron-right"></i>\n' +
+    '    </button>\n' +
     '\n' +
     '    <div class="tabs__panes" ng-transclude="1"></div>\n' +
     '\n' +
