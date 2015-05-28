@@ -55,7 +55,7 @@ angular.module('lumx.time-picker', [])
                 };
             }
 
-            $scope.activeTime = $scope.selected.date;
+            $scope.activeTime = moment($scope.selected.date);
             $scope.moment = moment;
         };
 
@@ -112,7 +112,7 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
-            $scope.model = $scope.selected.date.toDate();
+            $scope.model = $scope.activeTime.toDate();
 
             $timeout(function()
             {
