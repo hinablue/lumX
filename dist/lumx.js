@@ -2896,19 +2896,27 @@ angular.module('lumx.time-picker', [])
 
             moment.locale(activeLocale);
 
-            if (angular.isDefined($scope.model) && /\d{2}:\d{2}/gi.test($scope.model))
+            if (angular.isDefined($scope.model))
             {
-                var time = $scope.model.split(':');
-                $scope.selected = {
-                    model: moment().hours(time[0]).minutes(time[1]).format('HH:mm'),
-                    date: moment().hours(time[0]).minutes(time[1])
-                };
+                if (typeof $scope.model === 'string' && /\d{2}:\d{2}/gi.test($scope.model))
+                {
+                    var time = $scope.model.split(':');
+                    $scope.selected = {
+                        model: moment().hours(time[0]).minutes(time[1]).format('HH:mm'),
+                        date: moment().hours(time[0]).minutes(time[1])
+                    };
+                } else {
+                    $scope.selected = {
+                        model: moment($scope.model).format('HH:mm'),
+                        date: $scope.model
+                    };
+                }
             }
             else
             {
                 $scope.selected = {
                     model: undefined,
-                    date: moment()
+                    date: new Date()
                 };
             }
 
@@ -2969,7 +2977,7 @@ angular.module('lumx.time-picker', [])
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
 
-            $scope.model = $scope.selected.model;
+            $scope.model = $scope.selected.date.toDate();
 
             $timeout(function()
             {
