@@ -3,6 +3,11 @@
 //\*------------------------------------*/
 
 // Text field base styles
+lx-text-field > input,
+lx-text-field > textarea {
+    display: none;
+}
+
 .text-field {
     position: relative;
     padding-top: $base-spacing-unit * 4;
@@ -138,7 +143,7 @@
 .text-field--with-icon {
     margin-left: $base-spacing-unit * 8;
 }
-    
+
     // Text field label
     .text-field__label {
         display: block;

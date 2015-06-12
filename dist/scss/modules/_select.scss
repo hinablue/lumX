@@ -3,6 +3,9 @@
 //\*------------------------------------*/
 
 // Select base styles
+lx-select {
+    display: none;
+}
 .lx-select {
     position: relative;
     margin-top: $base-spacing-unit * 4;
