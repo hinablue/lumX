@@ -302,6 +302,11 @@ angular.module('lumx.date-picker', [])
             });
         };
 
+        $scope.clearDate = function()
+        {
+            $scope.selected = undefined;
+        };
+
         function generateCalendar()
         {
             var days = [],
@@ -346,6 +351,7 @@ angular.module('lumx.date-picker', [])
                 model: '=',
                 label: '@',
                 fixedLabel: '&',
+                allowClear: '@',
                 icon: '@'
             },
             templateUrl: 'date-picker.html',
@@ -361,6 +367,11 @@ angular.module('lumx.date-picker', [])
                 scope.$watch('model', function()
                 {
                     ctrl.build(checkLocale(attrs.locale), true);
+                });
+
+                attrs.$observe('allowClear', function(newValue)
+                {
+                    scope.allowClear = !!(angular.isDefined(newValue) && newValue === 'true');
                 });
 
                 function checkLocale(locale)
@@ -397,6 +408,10 @@ angular.module('lumx.dialog', [])
         this.open = function(dialogId)
         {
             activeDialogId = dialogId;
+
+            angular.element('body').css({
+                overflow: 'hidden'
+            });
 
             dialogFilter = angular.element('<div/>', {
                 class: 'dialog-filter'
@@ -446,6 +461,10 @@ angular.module('lumx.dialog', [])
 
             $timeout(function()
             {
+                angular.element('body').css({
+                    overflow: 'visible'
+                });
+
                 dialogFilter.remove();
 
                 scopeMap[dialogId].element
@@ -477,14 +496,6 @@ angular.module('lumx.dialog', [])
                 {
                     dialogScrollable
                         .css({ top: dialogHeader.outerHeight(), bottom: dialogActions.outerHeight() })
-                        .bind('mousewheel', function(e)
-                        {
-                            var event = e.originalEvent,
-                                d = event.wheelDelta || -event.detail;
-
-                            this.scrollTop += ( d < 0 ? 1 : -1 ) * 30;
-                            e.preventDefault();
-                        })
                         .bind('scroll', checkScrollEnd);
 
                     dialogContent.wrap(dialogScrollable);
@@ -3537,9 +3548,15 @@ angular.module("lumx.date-picker").run(['$templateCache', function(a) { a.put('d
     '    </div>\n' +
     '\n' +
     '    <!-- Date picker input -->\n' +
-    '    <lx-text-field class="lx-date-input" label="{{ label }}" ng-click="openPicker()">\n' +
-    '        <input type="text" ng-model="selected.model" ng-disabled="true">\n' +
-    '    </lx-text-field>\n' +
+    '    <div class="lx-date__input-wrapper">\n' +
+    '        <lx-text-field class="lx-date-input" label="{{ label }}" ng-click="openPicker()">\n' +
+    '            <input type="text" ng-model="selected.model" ng-disabled="true">\n' +
+    '        </lx-text-field>\n' +
+    '\n' +
+    '        <a class="lx-date__clear" ng-click="clearDate()" ng-if="allowClear">\n' +
+    '            <i class="mdi mdi-close-circle" ng-click="unselect($selected, $event)" ng-if="allowClear"></i>\n' +
+    '        </a>\n' +
+    '    </div>\n' +
     '\n' +
     '    <!-- Date picker -->\n' +
     '    <div class="lx-date-picker">\n' +
