@@ -3,6 +3,31 @@
 
 
 angular.module('lumx.select', [])
+    .filter('customFilter', function($log) {
+        return function(input, search) {
+            if (!input) return input;
+            if (!search) return input;
+
+            var expected = ('' + search).toLowerCase();
+            var result = {};
+            angular.forEach(input, function(value, key) {
+                if (typeof value === 'object') {
+                    angular.forEach(value, function(item, ikey) {
+                        var actual = ('' + item).toLowerCase();
+                        if (actual.indexOf(expected) !== -1) {
+                            result[key] = value;
+                        }
+                    });
+                } else {
+                    var actual = ('' + value).toLowerCase();
+                    if (actual.indexOf(expected) !== -1) {
+                        result[key] = value;
+                    }
+                }
+            });
+            return result;
+        };
+    })
     .controller('LxSelectController', ['$scope', '$compile', '$filter', '$interpolate', '$sce', '$timeout',
                                        function($scope, $compile, $filter, $interpolate, $sce, $timeout)
     {
@@ -101,7 +126,7 @@ angular.module('lumx.select', [])
 
         function hasNoResults()
         {
-            return angular.isUndefined($scope.choices()) || $filter('filter')($scope.choices(), $scope.data.filter).length === 0;
+            return angular.isUndefined($scope.choices()) || $filter('customFilter')($scope.choices(), $scope.data.filter).length === 0;
         }
 
         function filterNeeded()
