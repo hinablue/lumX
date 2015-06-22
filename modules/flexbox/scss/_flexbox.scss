@@ -48,6 +48,16 @@
     }
 }
 
+// Main Axis Start
+[flex-align="start"], //stretch
+[flex-align="start center"],
+[flex-align="start end"] {
+    @include media-query(desk) {
+        @include justify-content(flex-start);
+    }
+}
+
+
 // Main Axis End
 [flex-align="end"], //stretch
 [flex-align="end center"],
@@ -199,6 +209,10 @@
 @for $i from 1 through 12 {
     [flex-container="row"] > [flex-item="#{$i}"] {
         @include media-query(desk) {
+            -ms-flex: 0 0 #{(100 / 12) * $i + '%'};
+            -o-flex: 0 0 #{(100 / 12) * $i + '%'};
+            -moz-flex: 0 0 #{(100 / 12) * $i + '%'};
+            -webkit-flex: 0 0 #{(100 / 12) * $i + '%'};
             flex: 0 0 #{(100 / 12) * $i + '%'};
             max-width: #{(100 / 12) * $i + '%'};
         }
@@ -206,6 +220,10 @@
 
     [flex-container="column"] > [flex-item="#{$i}"] {
         @include media-query(desk) {
+            -ms-flex: 0 0 #{(100 / 12) * $i + '%'};
+            -o-flex: 0 0 #{(100 / 12) * $i + '%'};
+            -moz-flex: 0 0 #{(100 / 12) * $i + '%'};
+            -webkit-flex: 0 0 #{(100 / 12) * $i + '%'};
             flex: 0 0 #{(100 / 12) * $i + '%'};
             max-height: #{(100 / 12) * $i + '%'};
         }
