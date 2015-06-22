@@ -2,16 +2,16 @@
 //    #OBJECTS-DROPDOWN
 //\*------------------------------------*/
 
+lx-dropdown {
+    display: none;
+}
+
 // Dropdown base styles
 .dropdown {
     position: relative;
     display: inline-block;
     vertical-align: top;
 }
-
-
-
-
 
 // Dropdown menu
 .dropdown-menu {
@@ -38,7 +38,7 @@
         opacity: 1;
     }
 }
-    
+
     // Dropdown menu content
     .dropdown-menu__content {
         padding: $base-spacing-unit 0;

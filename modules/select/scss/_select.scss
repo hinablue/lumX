@@ -3,6 +3,9 @@
 //\*------------------------------------*/
 
 // Select base styles
+lx-select {
+    display: none;
+}
 .lx-select {
     position: relative;
     margin-top: $base-spacing-unit * 4;
@@ -37,7 +40,7 @@
 
         &:after {
             @include mdi;
-            content: '\f35e';
+            content: '\f1fa';
             @include position(absolute, null $base-spacing-unit $base-spacing-unit null);
             @include font-size(14px);
             color: $black-3;
@@ -128,12 +131,12 @@
         }
 
         &:before {
-            content: '\f1d6';
+            content: '\f1ec';
             @include transform(scale(1));
         }
 
         &:after {
-            content: '\f1d7';
+            content: '\f1f0';
             @include transform(scale(0));
             color: $teal-500;
         }

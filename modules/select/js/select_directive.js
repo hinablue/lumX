@@ -101,7 +101,7 @@ angular.module('lumx.select', [])
 
         function hasNoResults()
         {
-            return angular.isUndefined($scope.choices()) || $filter('filter')($scope.choices(), $scope.data.filter).length === 0;
+            return angular.isUndefined($scope.choices()) || $filter('customFilter')($scope.choices(), $scope.data.filter).length === 0;
         }
 
         function filterNeeded()

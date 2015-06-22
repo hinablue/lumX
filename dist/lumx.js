@@ -27,7 +27,32 @@ angular.module('lumx', [
     'lumx.search-filter',
     'lumx.date-picker',
     'lumx.time-picker'
-]);
+])
+.filter('customFilter', function($log) {
+    return function(input, search) {
+        if (!input) return input;
+        if (!search) return input;
+
+        var expected = ('' + search).toLowerCase();
+        var result = {};
+        angular.forEach(input, function(value, key) {
+            if (typeof value === 'object') {
+                angular.forEach(value, function(item, ikey) {
+                    var actual = ('' + item).toLowerCase();
+                    if (actual.indexOf(expected) !== -1) {
+                        result[key] = value;
+                    }
+                });
+            } else {
+                var actual = ('' + value).toLowerCase();
+                if (actual.indexOf(expected) !== -1) {
+                    result[key] = value;
+                }
+            }
+        });
+        return result;
+    };
+});
 /* global angular */
 'use strict'; // jshint ignore:line
 
@@ -2034,7 +2059,7 @@ angular.module('lumx.select', [])
 
         function hasNoResults()
         {
-            return angular.isUndefined($scope.choices()) || $filter('filter')($scope.choices(), $scope.data.filter).length === 0;
+            return angular.isUndefined($scope.choices()) || $filter('customFilter')($scope.choices(), $scope.data.filter).length === 0;
         }
 
         function filterNeeded()
@@ -3474,7 +3499,7 @@ angular.module("lumx.select").run(['$templateCache', function(a) { a.put('select
     '            <span ng-if="hasNoResults() && !filterNeeded()">No results!</span>\n' +
     '        </li>\n' +
     '\n' +
-    '        <li ng-repeat="$choice in choices() | filter:data.filter" ng-if="isChoicesVisible() && isChoicesArray()">\n' +
+    '        <li ng-repeat="$choice in choices() | customFilter:data.filter" ng-if="isChoicesVisible() && isChoicesArray()">\n' +
     '            <a class="lx-select__choice dropdown-link"\n' +
     '               ng-class="{ \'lx-select__choice--is-multiple\': multiple,\n' +
     '                           \'lx-select__choice--is-selected\': isSelected($choice) }"\n' +
@@ -3486,7 +3511,7 @@ angular.module("lumx.select").run(['$templateCache', function(a) { a.put('select
     '            <span class="dropdown-link dropdown-link--is-header" ng-bind-html="trust($subheader)"></span>\n' +
     '        </li>\n' +
     '\n' +
-    '        <li ng-repeat-end ng-repeat="$choice in children | filter:data.filter" ng-if="isChoicesVisible() && !isChoicesArray()">\n' +
+    '        <li ng-repeat-end ng-repeat="$choice in children | customFilter:data.filter" ng-if="isChoicesVisible() && !isChoicesArray()">\n' +
     '            <a class="lx-select__choice dropdown-link"\n' +
     '               ng-class="{ \'lx-select__choice--is-multiple\': multiple,\n' +
     '                           \'lx-select__choice--is-selected\': isSelected($choice) }"\n' +
