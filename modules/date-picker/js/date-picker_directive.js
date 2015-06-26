@@ -148,6 +148,10 @@ angular.module('lumx.date-picker', [])
             var calendarHeight = angular.element('.lx-date-picker__calendar').outerHeight(),
                 $yearSelector = angular.element('.lx-date-picker__year-selector');
 
+            if (calendarHeight < 200) {
+                calendarHeight = 200;
+            }
+
             $yearSelector.css({ height: calendarHeight });
 
             $scope.yearSelection = true;
