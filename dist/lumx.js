@@ -27,8 +27,7 @@ angular.module('lumx', [
     'lumx.search-filter',
     'lumx.date-picker',
     'lumx.time-picker'
-])
-.filter('customFilter', function($log) {
+]).filter('customFilter', function() {
     return function(input, search) {
         if (!input) return input;
         if (!search) return input;
@@ -53,6 +52,7 @@ angular.module('lumx', [
         return result;
     };
 });
+
 /* global angular */
 'use strict'; // jshint ignore:line
 
