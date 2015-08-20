@@ -20,5 +20,6 @@ angular.module('lumx', [
     'lumx.file-input',
     'lumx.progress',
     'lumx.search-filter',
-    'lumx.date-picker'
+    'lumx.date-picker',
+    'lumx.time-picker'
 ]);
