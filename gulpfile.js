@@ -21,7 +21,6 @@ var paths = {
         'build/js/templates/select_template.js',
         'build/js/templates/tabs_template.js',
         'build/js/templates/date-picker_template.js',
-        'build/js/templates/time-picker_template.js',
         'build/js/templates/progress_template.js'
     ],
     demo: [
@@ -93,9 +92,15 @@ gulp.task('scss', function()
     return gulp.src('demo/scss/lumx.scss')
         .pipe(plugins.plumber())
         .pipe(plugins.sass({
-            includePaths: 'libs/bourbon/app/assets/stylesheets/'
+            includePaths: ['libs/bourbon/app/assets/stylesheets/', 'libs/mdi/scss/']
         }))
         .pipe(gulp.dest('build'));
+});
+
+gulp.task('fonts', function()
+{
+    return gulp.src('libs/mdi/fonts/**')
+        .pipe(gulp.dest('build/fonts'));
 });
 
 gulp.task('demo', function()
@@ -155,11 +160,18 @@ gulp.task('dist:css', ['scss:paths'], function()
         .pipe(plugins.plumber())
         .pipe(plugins.rename('lumx.scss'))
         .pipe(plugins.sass({
-            includePaths: 'libs/bourbon/app/assets/stylesheets/'
+            includePaths: ['libs/bourbon/app/assets/stylesheets/', 'libs/mdi/scss/']
         }))
+        .pipe(plugins.replace(/\.\.\/fonts/g, './fonts'))
         .pipe(plugins.minifyCss({ keepSpecialComments: 0 }))
         .pipe(plugins.insert.prepend('/*\n LumX ' + options.version + '\n (c) 2014-' + new Date().getFullYear() + ' LumApps http://ui.lumapps.com\n License: MIT\n*/\n'))
         .pipe(gulp.dest('dist'));
+});
+
+gulp.task('dist:fonts', function()
+{
+    return gulp.src('libs/mdi/fonts/**')
+        .pipe(gulp.dest('dist/fonts'));
 });
 
 gulp.task('tpl:dropdown', function()
@@ -246,18 +258,6 @@ gulp.task('tpl:date-picker', function()
         .pipe(gulp.dest('build/js/templates'));
 });
 
-gulp.task('tpl:time-picker', function()
-{
-    return gulp.src('modules/time-picker/views/*.html')
-        .pipe(plugins.plumber())
-        .pipe(plugins.templatecache({
-            output: 'time-picker_template.js',
-            moduleName: 'lumx.time-picker',
-            strip: 'views/'
-        }))
-        .pipe(gulp.dest('build/js/templates'));
-});
-
 gulp.task('tpl:progress', function()
 {
     return gulp.src('modules/progress/views/*.html')
@@ -270,7 +270,7 @@ gulp.task('tpl:progress', function()
         .pipe(gulp.dest('build/js/templates'));
 });
 
-gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker', 'tpl:progress'], function()
+gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress'], function()
 {
     return gulp.src(paths.js.concat(paths.templates))
         .pipe(plugins.plumber())
@@ -303,17 +303,17 @@ gulp.task('watch', ['build'], function()
     watcherWithCache('tpl:select', 'modules/select/views/*.html', ['tpl:select']);
     watcherWithCache('tpl:tabs', 'modules/tabs/views/*.html', ['tpl:tabs']);
     watcherWithCache('tpl:date-picker', 'modules/date-picker/views/*.html', ['tpl:date-picker']);
-    watcherWithCache('tpl:time-picker', 'modules/time-picker/views/*.html', ['tpl:time-picker']);
     watcherWithCache('tpl:progress', 'modules/progress/views/*.html', ['tpl:progress']);
 });
 
 gulp.task('clean', ['clean:build', 'clean:dist']);
 
-gulp.task('build', ['lint', 'scss', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress']);
+gulp.task('build', ['lint', 'scss', 'fonts', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress']);
 gulp.task('dist', ['clean:dist'], function()
 {
-   gulp.start('dist:css');
-   gulp.start('dist:scripts');
+    gulp.start('dist:css');
+    gulp.start('dist:scripts');
+    gulp.start('dist:fonts');
 });
 
 gulp.task('default', ['watch']);

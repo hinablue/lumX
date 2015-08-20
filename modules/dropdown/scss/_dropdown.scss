@@ -2,16 +2,16 @@
 //    #OBJECTS-DROPDOWN
 //\*------------------------------------*/
 
-lx-dropdown {
-    display: none;
-}
-
 // Dropdown base styles
 .dropdown {
     position: relative;
     display: inline-block;
     vertical-align: top;
 }
+
+
+
+
 
 // Dropdown menu
 .dropdown-menu {
@@ -65,9 +65,11 @@ lx-dropdown {
 
 // Dropdown link
 .dropdown-link {
-    display: block;
-    height: $base-spacing-unit * 4;
-    padding: 0 $base-spacing-unit * 2;
+    @include display(flex);
+    @include flex-direction(row);
+    @include align-items(center);
+    height: 32px;
+    padding: 0 $base-spacing-unit * 4 0 $base-spacing-unit * 2;
     cursor: pointer;
     @include font-size(14px);
     color: $black-1;
@@ -75,12 +77,39 @@ lx-dropdown {
     text-decoration: none;
     white-space: nowrap;
 
-    &:not(.dropdown-link--is-header):hover {
-        background-color: $grey-200;
+    &:not(.dropdown-link--is-header) {
+        &:hover {
+            background-color: $grey-200;
+        }
+
+        i {
+            @extend %icon;
+            @extend %icon--xs;
+            @extend %icon--flat;
+            margin-right: $base-spacing-unit * 2;
+            color: $black-2;
+        }
+    }
+}
+
+.dropdown-link--is-large {
+    height: 48px;
+
+    i {
+        @extend %icon;
+        @extend %icon--s;
+        @extend %icon--flat;
     }
 }
 
 .dropdown-link--is-header {
     color: $black-3;
     cursor: default;
+
+    i {
+        width: 18px;
+        margin-right: 6px;
+        color: $black-3;
+        text-align: center;
+    }
 }

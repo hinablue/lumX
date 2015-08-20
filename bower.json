@@ -45,7 +45,7 @@
     "velocity": "latest",
     "moment": "latest",
     "bourbon": "latest",
-    "mdi": "1.1.34"
+    "mdi": "latest"
   },
   "devDependencies": {
     "angular-route": "latest",

@@ -3,7 +3,10 @@
 //\*------------------------------------*/
 
 // Checkbox base styles
-.checkbox {}
+.checkbox {
+    min-width: $size-xs;
+    min-height: $size-xs;
+}
 
     // Checkbox input
     .checkbox__input {
@@ -55,6 +58,10 @@
         cursor: pointer;
         @include user-select(none);
 
+        .checkbox--standalone & {
+            padding-left: 0;
+        }
+
         &:before,
         &:after {
             @include mdi;
@@ -66,11 +73,11 @@
         }
 
         &:before {
-            content: '\f1ec';
+            @include mdi-icon('checkbox-blank-outline');
         }
 
         &:after {
-            content: '\f1f0';
+            @include mdi-icon('checkbox-marked');
             color: $teal-500;
         }
     }

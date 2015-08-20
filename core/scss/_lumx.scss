@@ -3,6 +3,7 @@
 //\*------------------------------------*/
 
 @import "bourbon";
+@import "materialdesignicons.scss";
 
 @import "settings/colors";
 @import "settings/defaults";
@@ -39,7 +40,6 @@
 @import "../../modules/checkbox/scss/checkbox";
 @import "../../modules/data-table/scss/data-table";
 @import "../../modules/date-picker/scss/date-picker";
-@import "../../modules/time-picker/scss/time-picker";
 @import "../../modules/dialog/scss/dialog";
 @import "../../modules/dropdown/scss/dropdown";
 @import "../../modules/fab/scss/fab";
