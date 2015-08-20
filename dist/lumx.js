@@ -3931,6 +3931,52 @@ angular.module("lumx.date-picker").run(['$templateCache', function(a) { a.put('d
     '</div>\n' +
     '');
 	 }]);
+angular.module("lumx.time-picker").run(['$templateCache', function(a) { a.put('time-picker.html', '<div class="lx-time" ng-class="{ \'lx-time--fixed-label\': fixedLabel(),\n' +
+    '                                 \'lx-time--with-icon\': icon && fixedLabel() }">\n' +
+    '\n' +
+    '    <div class="text-field__icon" ng-if="icon && fixedLabel() ">\n' +
+    '        <i class="mdi mdi-{{ icon }}"></i>\n' +
+    '    </div>\n' +
+    '\n' +
+    '    <!-- Time picker input -->\n' +
+    '    <lx-text-field class="lx-time-input" label="{{ label }}" ng-click="openPicker()">\n' +
+    '        <input type="text" ng-model="selected.model" ng-disabled="true">\n' +
+    '    </lx-text-field>\n' +
+    '\n' +
+    '    <!-- Time picker -->\n' +
+    '    <div class="lx-time-picker">\n' +
+    '        <div class="lx-time-picker__current-time">\n' +
+    '            <div class="lx-time-picker__current-hour">\n' +
+    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousHour()">\n' +
+    '                    <i class="mdi mdi-chevron-up"></i>\n' +
+    '                </button>\n' +
+    '                <div class="lx-time-picker__hour">\n' +
+    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format(\'HH\') }}</span>\n' +
+    '                </div>\n' +
+    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextHour()">\n' +
+    '                    <i class="mdi mdi-chevron-down"></i>\n' +
+    '                </button>\n' +
+    '            </div>\n' +
+    '            <div class="lx-time-picker__specator">:</div>\n' +
+    '            <div class="lx-time-picker__current-minute">\n' +
+    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousMinute()">\n' +
+    '                    <i class="mdi mdi-chevron-up"></i>\n' +
+    '                </button>\n' +
+    '                <div class="lx-time-picker__minute">\n' +
+    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format(\'mm\') }} }}</span>\n' +
+    '                </div>\n' +
+    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextMinute()">\n' +
+    '                    <i class="mdi mdi-chevron-down"></i>\n' +
+    '                </button>\n' +
+    '            </div>\n' +
+    '        </div>\n' +
+    '\n' +
+    '        <div class="lx-time-picker__actions">\n' +
+    '            <button class="btn btn--m btn--teal btn--flat" lx-ripple ng-click="closePicker()">Ok</button>\n' +
+    '        </div>\n' +
+    '    </div>\n' +
+    '</div>');
+	 }]);
 angular.module("lumx.progress").run(['$templateCache', function(a) { a.put('progress.html', '<div class="progress-container">\n' +
     '    <div class="progress-circular-container" ng-if="type === \'circular\'">\n' +
     '        <div class="progress-circular progress-circular--is-small progress-circular--is-shown">\n' +

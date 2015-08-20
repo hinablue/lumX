@@ -21,6 +21,7 @@ var paths = {
         'build/js/templates/select_template.js',
         'build/js/templates/tabs_template.js',
         'build/js/templates/date-picker_template.js',
+        'build/js/templates/time-picker_template.js',
         'build/js/templates/progress_template.js'
     ],
     demo: [
@@ -257,6 +258,19 @@ gulp.task('tpl:date-picker', function()
         .pipe(gulp.dest('build/js/templates'));
 });
 
+gulp.task('tpl:time-picker', function()
+{
+    return gulp.src('modules/time-picker/views/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'time-picker_template.js',
+            moduleName: 'lumx.time-picker',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js/templates'));
+});
+
+
 gulp.task('tpl:progress', function()
 {
     return gulp.src('modules/progress/views/*.html')
@@ -269,7 +283,7 @@ gulp.task('tpl:progress', function()
         .pipe(gulp.dest('build/js/templates'));
 });
 
-gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress'], function()
+gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker', 'tpl:progress'], function()
 {
     return gulp.src(paths.js.concat(paths.templates))
         .pipe(plugins.plumber())
@@ -302,12 +316,13 @@ gulp.task('watch', ['build'], function()
     watcherWithCache('tpl:select', 'modules/select/views/*.html', ['tpl:select']);
     watcherWithCache('tpl:tabs', 'modules/tabs/views/*.html', ['tpl:tabs']);
     watcherWithCache('tpl:date-picker', 'modules/date-picker/views/*.html', ['tpl:date-picker']);
+    watcherWithCache('tpl:time-picker', 'modules/time-picker/views/*.html', ['tpl:time-picker']);
     watcherWithCache('tpl:progress', 'modules/progress/views/*.html', ['tpl:progress']);
 });
 
 gulp.task('clean', ['clean:build', 'clean:dist']);
 
-gulp.task('build', ['lint', 'scss', 'fonts', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress']);
+gulp.task('build', ['lint', 'scss', 'fonts', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:time-picker', 'tpl:progress']);
 gulp.task('dist', ['clean:dist'], function()
 {
     gulp.start('dist:css');
