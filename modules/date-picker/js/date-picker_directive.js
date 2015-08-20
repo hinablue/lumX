@@ -13,6 +13,10 @@ angular.module('lumx.date-picker', [])
             $datePickerFilter,
             $datePickerContainer;
 
+        $scope.ctrlData = {
+            isOpen: false
+        };
+
         this.init = function(element, locale)
         {
             $datePicker = element.find('.lx-date-picker');
@@ -104,32 +108,47 @@ angular.module('lumx.date-picker', [])
 
         $scope.openPicker = function()
         {
-            $scope.yearSelection = false;
+            if ($scope.ctrlData.isOpen)
+            {
+                return;
+            }
 
-            $datePickerFilter = angular.element('<div/>', {
-                class: 'lx-date-filter'
-            });
-
-            $datePickerFilter
-                .appendTo('body')
-                .bind('click', function()
-                {
-                    $scope.closePicker();
-                });
-
-            $datePicker
-                .appendTo('body')
-                .show();
+            $scope.ctrlData.isOpen = true;
 
             $timeout(function()
             {
-                $datePickerFilter.addClass('lx-date-filter--is-shown');
-                $datePicker.addClass('lx-date-picker--is-shown');
-            }, 100);
+                $scope.yearSelection = false;
+
+                $datePickerFilter = angular.element('<div/>', {
+                    class: 'lx-date-filter'
+                });
+
+                $datePickerFilter
+                    .appendTo('body')
+                    .on('click', function()
+                    {
+                        $scope.closePicker();
+                    });
+
+                $datePicker
+                    .appendTo('body')
+                    .show();
+
+                $timeout(function()
+                {
+                    $datePickerFilter.addClass('lx-date-filter--is-shown');
+                    $datePicker.addClass('lx-date-picker--is-shown');
+                }, 100);
+            });
         };
 
         $scope.closePicker = function()
         {
+            if (!$scope.ctrlData.isOpen)
+            {
+                return;
+            }
+
             $datePickerFilter.removeClass('lx-date-filter--is-shown');
             $datePicker.removeClass('lx-date-picker--is-shown');
 
@@ -140,6 +159,8 @@ angular.module('lumx.date-picker', [])
                 $datePicker
                     .hide()
                     .appendTo($datePickerContainer);
+
+                $scope.ctrlData.isOpen = false;
             }, 600);
         };
 
@@ -153,7 +174,6 @@ angular.module('lumx.date-picker', [])
             }
 
             $yearSelector.css({ height: calendarHeight });
-
             $scope.yearSelection = true;
 
             $timeout(function()

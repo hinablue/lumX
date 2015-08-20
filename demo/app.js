@@ -1,5 +1,6 @@
 /* global angular */
 /* global escape */
+/* global console */
 'use strict'; // jshint ignore:line
 
 angular
@@ -98,9 +99,6 @@ angular
             when('/directives/date-picker', {
                 templateUrl: '/includes/modules/date-picker/date-picker.html'
             }).
-            when('/directives/time-picker', {
-                templateUrl: '/includes/modules/time-picker/time-picker.html'
-            }).
             when('/directives/thumbnails', {
                 templateUrl: '/includes/modules/thumbnail/thumbnail.html'
             }).
@@ -135,23 +133,23 @@ angular
             }
         };
 
-        // $http.get('https://api.github.com/repos/lumapps/lumx/git/refs/heads/master').success(function(master)
-        // {
-        //     $http.get(master.object.url).success(function(lastCommit)
-        //     {
-        //         $scope.repo.lastCommit.date = new Date(lastCommit.author.date);
-        //         $scope.repo.lastCommit.sha = lastCommit.sha;
-        //         $scope.repo.lastCommit.url = lastCommit.html_url;
-        //     });
-        // });
+        $http.get('https://api.github.com/repos/lumapps/lumx/git/refs/heads/master').success(function(master)
+        {
+            $http.get(master.object.url).success(function(lastCommit)
+            {
+                $scope.repo.lastCommit.date = new Date(lastCommit.author.date);
+                $scope.repo.lastCommit.sha = lastCommit.sha;
+                $scope.repo.lastCommit.url = lastCommit.html_url;
+            });
+        });
 
-        // $http.get('https://api.github.com/repos/lumapps/lumx/releases').success(function(lastReleases)
-        // {
-        //     var lastRelease = lastReleases[0] ? lastReleases[0] : lastReleases;
-        //     $scope.repo.lastRelease.name = lastRelease.name;
-        //     $scope.repo.lastRelease.tag = lastRelease.tag_name;
-        //     $scope.repo.lastRelease.url = lastRelease.zipball_url;
-        // });
+        $http.get('https://api.github.com/repos/lumapps/lumx/releases').success(function(lastReleases)
+        {
+            var lastRelease = lastReleases[0] ? lastReleases[0] : lastReleases;
+            $scope.repo.lastRelease.name = lastRelease.name;
+            $scope.repo.lastRelease.tag = lastRelease.tag_name;
+            $scope.repo.lastRelease.url = lastRelease.zipball_url;
+        });
 
         $scope.people = [
             { name: 'Adam',      email: 'adam@email.com',      age: 10 },
@@ -303,6 +301,26 @@ angular
             LxDialogService.open(dialogId);
         };
 
+        $scope.$on('lx-dialog__open-start', function(event, data)
+        {
+            console.log('open start', data);
+        });
+
+        $scope.$on('lx-dialog__open-end', function(event, data)
+        {
+            console.log('open end', data);
+        });
+
+        $scope.$on('lx-dialog__close-start', function(event, data)
+        {
+            console.log('close start', data);
+        });
+
+        $scope.$on('lx-dialog__close-end', function(event, data)
+        {
+            console.log('close end', data);
+        });
+
         $scope.closingDialog = function()
         {
             LxNotificationService.info('Dialog closed!');
@@ -375,8 +393,7 @@ angular
         });
 
         $scope.datepicker = {
-            date: new Date(),
-            time: '13:00'
+            date: new Date()
         };
 
         var tabIndex = 4;
@@ -407,7 +424,7 @@ angular
 
         $scope.addPerson = function()
         {
-            $scope.people.push({ name: 'Lorem', email: 'lorem@email.com', age: 99 })
+            $scope.people.push({ name: 'Lorem', email: 'lorem@email.com', age: 99 });
         };
 
         $scope.thumbnail = '/images/placeholder/1-horizontal.jpg';
