@@ -11,7 +11,8 @@ angular.module('lumx.date-picker', [])
             activeLocale,
             $datePicker,
             $datePickerFilter,
-            $datePickerContainer;
+            $datePickerContainer,
+            $computedWindow;
 
         $scope.ctrlData = {
             isOpen: false
@@ -21,6 +22,7 @@ angular.module('lumx.date-picker', [])
         {
             $datePicker = element.find('.lx-date-picker');
             $datePickerContainer = element;
+            $computedWindow = angular.element($window);
 
             self.build(locale, false);
         };
@@ -152,6 +154,8 @@ angular.module('lumx.date-picker', [])
             $datePickerFilter.removeClass('lx-date-filter--is-shown');
             $datePicker.removeClass('lx-date-picker--is-shown');
 
+            $computedWindow.off('resize');
+
             $timeout(function()
             {
                 $datePickerFilter.remove();
@@ -166,27 +170,19 @@ angular.module('lumx.date-picker', [])
 
         $scope.displayYearSelection = function()
         {
-            var calendarHeight = angular.element('.lx-date-picker__calendar').outerHeight(),
-                $yearSelector = angular.element('.lx-date-picker__year-selector');
-
-            if (calendarHeight < 200) {
-                calendarHeight = 200;
-            }
-
-            $yearSelector.css({ height: calendarHeight });
             $scope.yearSelection = true;
 
             $timeout(function()
             {
-                var $activeYear = angular.element('.lx-date-picker__year--is-active');
-
+                var $yearSelector = $datePicker.find('.lx-date-picker__year-selector');
+                var $activeYear = $yearSelector.find('.lx-date-picker__year--is-active');
                 $yearSelector.scrollTop($yearSelector.scrollTop() + $activeYear.position().top - $yearSelector.height()/2 + $activeYear.height()/2);
             });
         };
 
         $scope.clearDate = function()
         {
-            $scope.selected = undefined;
+            $scope.model = undefined;
         };
 
         function generateCalendar()
