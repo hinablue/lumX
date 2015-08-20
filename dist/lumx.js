@@ -152,7 +152,8 @@ angular.module('lumx.date-picker', [])
             activeLocale,
             $datePicker,
             $datePickerFilter,
-            $datePickerContainer;
+            $datePickerContainer,
+            $computedWindow;
 
         $scope.ctrlData = {
             isOpen: false
@@ -162,6 +163,7 @@ angular.module('lumx.date-picker', [])
         {
             $datePicker = element.find('.lx-date-picker');
             $datePickerContainer = element;
+            $computedWindow = angular.element($window);
 
             self.build(locale, false);
         };
@@ -293,6 +295,8 @@ angular.module('lumx.date-picker', [])
             $datePickerFilter.removeClass('lx-date-filter--is-shown');
             $datePicker.removeClass('lx-date-picker--is-shown');
 
+            $computedWindow.off('resize');
+
             $timeout(function()
             {
                 $datePickerFilter.remove();
@@ -307,27 +311,19 @@ angular.module('lumx.date-picker', [])
 
         $scope.displayYearSelection = function()
         {
-            var calendarHeight = angular.element('.lx-date-picker__calendar').outerHeight(),
-                $yearSelector = angular.element('.lx-date-picker__year-selector');
-
-            if (calendarHeight < 200) {
-                calendarHeight = 200;
-            }
-
-            $yearSelector.css({ height: calendarHeight });
             $scope.yearSelection = true;
 
             $timeout(function()
             {
-                var $activeYear = angular.element('.lx-date-picker__year--is-active');
-
+                var $yearSelector = $datePicker.find('.lx-date-picker__year-selector');
+                var $activeYear = $yearSelector.find('.lx-date-picker__year--is-active');
                 $yearSelector.scrollTop($yearSelector.scrollTop() + $activeYear.position().top - $yearSelector.height()/2 + $activeYear.height()/2);
             });
         };
 
         $scope.clearDate = function()
         {
-            $scope.selected = undefined;
+            $scope.model = undefined;
         };
 
         function generateCalendar()
@@ -3227,9 +3223,12 @@ angular.module('lumx.text-field', [])
                 {
                     $timeout(function()
                     {
-                        $field
-                            .removeAttr('style')
-                            .css({ height: $field[0].scrollHeight + 'px' });
+                        var tmpTextArea = angular.element('<textarea class="text-field__input" style="width: ' + $field.width() + 'px;">' + $field.val() + '</textarea>');
+                        tmpTextArea.appendTo('body');
+
+                        $field.css({ height: tmpTextArea[0].scrollHeight + 'px' });
+
+                        tmpTextArea.remove();
                     });
                 }
 
@@ -3932,11 +3931,22 @@ angular.module("lumx.date-picker").run(['$templateCache', function(a) { a.put('d
     '</div>\n' +
     '');
 	 }]);
-angular.module("lumx.progress").run(['$templateCache', function(a) { a.put('progress.html', '<div class="progress-circular-container" ng-if="type === \'circular\'">\n' +
-    '    <div class="progress-circular progress-circular--is-small progress-circular--is-shown">\n' +
-    '        <svg class="progress-circular__svg">\n' +
-    '            <circle class="progress-circular__path" cx="50" cy="50" r="20" fill="none" stroke-miterlimit="10" stroke="{{ color }}"></circle>\n' +
-    '        </svg>\n' +
+angular.module("lumx.progress").run(['$templateCache', function(a) { a.put('progress.html', '<div class="progress-container">\n' +
+    '    <div class="progress-circular-container" ng-if="type === \'circular\'">\n' +
+    '        <div class="progress-circular progress-circular--is-small progress-circular--is-shown">\n' +
+    '            <svg class="progress-circular__svg">\n' +
+    '                <circle class="progress-circular__path" cx="50" cy="50" r="20" fill="none" stroke-miterlimit="10" stroke="{{ color }}"></circle>\n' +
+    '            </svg>\n' +
+    '        </div>\n' +
     '    </div>\n' +
-    '</div>');
+    '\n' +
+    '    <div class="progress-linear-container" ng-if="type === \'linear\'">\n' +
+    '        <div class="progress-linear progress-linear--is-shown">\n' +
+    '            <div class="progress-linear__background" style="background-color: {{ color }}"></div>\n' +
+    '            <div class="progress-linear__bar progress-linear__bar--first" style="background-color: {{ color }}"></div>\n' +
+    '            <div class="progress-linear__bar progress-linear__bar--second" style="background-color: {{ color }}"></div>\n' +
+    '        </div>\n' +
+    '    </div>\n' +
+    '</div>\n' +
+    '');
 	 }]);
