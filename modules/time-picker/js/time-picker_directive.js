@@ -11,12 +11,45 @@ angular.module('lumx.time-picker', [])
             activeLocale,
             $timePicker,
             $timePickerFilter,
-            $timePickerContainer;
+            $timePickerContainer,
+            $computedWindow;
+
+        $scope.ctrlData = {
+            isOpen: false
+        };
+
+        $scope.display = {
+            hours: moment().format('HH'),
+            minutes: moment().format('mm')
+        };
+
+        $scope.$watch('display', function(newValue, oldValue) {
+            if (!angular.equals(newValue, oldValue)) {
+                var hours = parseInt(newValue.hours, 10), minutes = parseInt(newValue.minutes, 10);
+
+                if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+                    if (hours < 0 || hours > 23) {
+                        $scope.display.hours = oldValue.hours;
+                    }
+                    if (minutes < 0 || minutes > 59) {
+                        $scope.display.minutes = oldValue.minutes;
+                    }
+                } else {
+                    $timeout(function() {
+                        $scope.activeTime = moment($scope.selected.date).hours(hours).minutes(minutes);
+                        $scope.selected.date = $scope.activeTime;
+                        $scope.selected.model = $scope.activeTime.format('HH:mm');
+                    }, 100);
+                }
+            }
+        }, true);
 
         this.init = function(element, locale)
         {
             $timePicker = element.find('.lx-time-picker');
             $timePickerContainer = element;
+            $computedWindow = angular.element($window);
+
             self.build(locale, false);
         };
 
@@ -55,6 +88,11 @@ angular.module('lumx.time-picker', [])
                 };
             }
 
+            $scope.display = {
+                hours: moment($scope.selected.date).format('HH'),
+                minutes: moment($scope.selected.date).format('mm')
+            };
+
             $scope.activeTime = moment($scope.selected.date);
             $scope.moment = moment;
         };
@@ -85,32 +123,48 @@ angular.module('lumx.time-picker', [])
 
         $scope.openPicker = function()
         {
-            $timePickerFilter = angular.element('<div/>', {
-                class: 'lx-time-filter'
-            });
 
-            $timePickerFilter
-                .appendTo('body')
-                .bind('click', function()
-                {
-                    $scope.closePicker();
+            if ($scope.ctrlData.isOpen) {
+                return;
+            }
+
+            $scope.ctrlData.isOpen = true;
+
+            $timeout(function() {
+                $timePickerFilter = angular.element('<div/>', {
+                    class: 'lx-time-filter'
                 });
 
-            $timePicker
-                .appendTo('body')
-                .show();
+                $timePickerFilter
+                    .appendTo('body')
+                    .on('click', function()
+                    {
+                        $scope.closePicker();
+                    });
 
-            $timeout(function()
-            {
-                $timePickerFilter.addClass('lx-time-filter--is-shown');
-                $timePicker.addClass('lx-time-picker--is-shown');
-            }, 100);
+                $timePicker
+                    .appendTo('body')
+                    .show();
+
+                $timeout(function()
+                {
+                    $timePickerFilter.addClass('lx-time-filter--is-shown');
+                    $timePicker.addClass('lx-time-picker--is-shown');
+                }, 100);
+            });
         };
 
         $scope.closePicker = function()
         {
+
+            if (!$scope.ctrlData.isOpen) {
+                return;
+            }
+
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
+
+            $computedWindow.off('resize');
 
             $scope.model = $scope.activeTime.toDate();
 
@@ -121,12 +175,19 @@ angular.module('lumx.time-picker', [])
                 $timePicker
                     .hide()
                     .appendTo($timePickerContainer);
+
+                $scope.ctrlData.isOpen = false;
             }, 600);
         };
 
         function generateTimetable() {
             $scope.selected.date = $scope.activeTime;
             $scope.selected.model = $scope.activeTime.format('HH:mm');
+
+            $scope.display = {
+                hours: moment($scope.selected.date).format('HH'),
+                minutes: moment($scope.selected.date).format('mm')
+            };
         }
     }])
     .directive('lxTimePicker', function()
@@ -153,6 +214,11 @@ angular.module('lumx.time-picker', [])
                 scope.$watch('model', function (newVal)
                 {
                     ctrl.build(checkLocale(attrs.locale), true);
+                });
+
+                attrs.$observe('allowClear', function(newValue)
+                {
+                    scope.allowClear = !!(angular.isDefined(newValue) && newValue === 'true');
                 });
 
                 function checkLocale(locale)

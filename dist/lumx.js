@@ -25,8 +25,10 @@ angular.module('lumx', [
     'lumx.file-input',
     'lumx.progress',
     'lumx.search-filter',
-    'lumx.date-picker'
+    'lumx.date-picker',
+    'lumx.time-picker'
 ]);
+
 /* global angular */
 'use strict'; // jshint ignore:line
 
@@ -3380,12 +3382,45 @@ angular.module('lumx.time-picker', [])
             activeLocale,
             $timePicker,
             $timePickerFilter,
-            $timePickerContainer;
+            $timePickerContainer,
+            $computedWindow;
+
+        $scope.ctrlData = {
+            isOpen: false
+        };
+
+        $scope.display = {
+            hours: moment().format('HH'),
+            minutes: moment().format('mm')
+        };
+
+        $scope.$watch('display', function(newValue, oldValue) {
+            if (!angular.equals(newValue, oldValue)) {
+                var hours = parseInt(newValue.hours, 10), minutes = parseInt(newValue.minutes, 10);
+
+                if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+                    if (hours < 0 || hours > 23) {
+                        $scope.display.hours = oldValue.hours;
+                    }
+                    if (minutes < 0 || minutes > 59) {
+                        $scope.display.minutes = oldValue.minutes;
+                    }
+                } else {
+                    $timeout(function() {
+                        $scope.activeTime = moment($scope.selected.date).hours(hours).minutes(minutes);
+                        $scope.selected.date = $scope.activeTime;
+                        $scope.selected.model = $scope.activeTime.format('HH:mm');
+                    }, 100);
+                }
+            }
+        }, true);
 
         this.init = function(element, locale)
         {
             $timePicker = element.find('.lx-time-picker');
             $timePickerContainer = element;
+            $computedWindow = angular.element($window);
+
             self.build(locale, false);
         };
 
@@ -3424,6 +3459,11 @@ angular.module('lumx.time-picker', [])
                 };
             }
 
+            $scope.display = {
+                hours: moment($scope.selected.date).format('HH'),
+                minutes: moment($scope.selected.date).format('mm')
+            };
+
             $scope.activeTime = moment($scope.selected.date);
             $scope.moment = moment;
         };
@@ -3454,32 +3494,48 @@ angular.module('lumx.time-picker', [])
 
         $scope.openPicker = function()
         {
-            $timePickerFilter = angular.element('<div/>', {
-                class: 'lx-time-filter'
-            });
 
-            $timePickerFilter
-                .appendTo('body')
-                .bind('click', function()
-                {
-                    $scope.closePicker();
+            if ($scope.ctrlData.isOpen) {
+                return;
+            }
+
+            $scope.ctrlData.isOpen = true;
+
+            $timeout(function() {
+                $timePickerFilter = angular.element('<div/>', {
+                    class: 'lx-time-filter'
                 });
 
-            $timePicker
-                .appendTo('body')
-                .show();
+                $timePickerFilter
+                    .appendTo('body')
+                    .on('click', function()
+                    {
+                        $scope.closePicker();
+                    });
 
-            $timeout(function()
-            {
-                $timePickerFilter.addClass('lx-time-filter--is-shown');
-                $timePicker.addClass('lx-time-picker--is-shown');
-            }, 100);
+                $timePicker
+                    .appendTo('body')
+                    .show();
+
+                $timeout(function()
+                {
+                    $timePickerFilter.addClass('lx-time-filter--is-shown');
+                    $timePicker.addClass('lx-time-picker--is-shown');
+                }, 100);
+            });
         };
 
         $scope.closePicker = function()
         {
+
+            if (!$scope.ctrlData.isOpen) {
+                return;
+            }
+
             $timePickerFilter.removeClass('lx-time-filter--is-shown');
             $timePicker.removeClass('lx-time-picker--is-shown');
+
+            $computedWindow.off('resize');
 
             $scope.model = $scope.activeTime.toDate();
 
@@ -3490,12 +3546,19 @@ angular.module('lumx.time-picker', [])
                 $timePicker
                     .hide()
                     .appendTo($timePickerContainer);
+
+                $scope.ctrlData.isOpen = false;
             }, 600);
         };
 
         function generateTimetable() {
             $scope.selected.date = $scope.activeTime;
             $scope.selected.model = $scope.activeTime.format('HH:mm');
+
+            $scope.display = {
+                hours: moment($scope.selected.date).format('HH'),
+                minutes: moment($scope.selected.date).format('mm')
+            };
         }
     }])
     .directive('lxTimePicker', function()
@@ -3522,6 +3585,11 @@ angular.module('lumx.time-picker', [])
                 scope.$watch('model', function (newVal)
                 {
                     ctrl.build(checkLocale(attrs.locale), true);
+                });
+
+                attrs.$observe('allowClear', function(newValue)
+                {
+                    scope.allowClear = !!(angular.isDefined(newValue) && newValue === 'true');
                 });
 
                 function checkLocale(locale)
@@ -3939,40 +4007,53 @@ angular.module("lumx.time-picker").run(['$templateCache', function(a) { a.put('t
     '    </div>\n' +
     '\n' +
     '    <!-- Time picker input -->\n' +
-    '    <lx-text-field class="lx-time-input" label="{{ label }}" ng-click="openPicker()">\n' +
-    '        <input type="text" ng-model="selected.model" ng-disabled="true">\n' +
-    '    </lx-text-field>\n' +
+    '    <div class="lx-time__input-wrapper">\n' +
+    '        <lx-text-field class="lx-time-input" label="{{ label }}" ng-click="openPicker()">\n' +
+    '            <input type="text" ng-model="selected.model" ng-disabled="true">\n' +
+    '        </lx-text-field>\n' +
+    '    </div>\n' +
     '\n' +
     '    <!-- Time picker -->\n' +
     '    <div class="lx-time-picker">\n' +
-    '        <div class="lx-time-picker__current-time">\n' +
-    '            <div class="lx-time-picker__current-hour">\n' +
-    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousHour()">\n' +
-    '                    <i class="mdi mdi-chevron-up"></i>\n' +
-    '                </button>\n' +
-    '                <div class="lx-time-picker__hour">\n' +
-    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format(\'HH\') }}</span>\n' +
+    '        <div ng-if="ctrlData.isOpen">\n' +
+    '            <div class="lx-time-picker__header">\n' +
+    '                <div class="lx-time-picker__now">\n' +
+    '                    <span>{{ moment().format(\'HH:mm\') }}</span>\n' +
     '                </div>\n' +
-    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextHour()">\n' +
-    '                    <i class="mdi mdi-chevron-down"></i>\n' +
-    '                </button>\n' +
     '            </div>\n' +
-    '            <div class="lx-time-picker__specator">:</div>\n' +
-    '            <div class="lx-time-picker__current-minute">\n' +
-    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousMinute()">\n' +
-    '                    <i class="mdi mdi-chevron-up"></i>\n' +
-    '                </button>\n' +
-    '                <div class="lx-time-picker__minute">\n' +
-    '                    <span class="btn btn--xl tc-white bgc-teal-600 btn--icon">{{ moment(selected.date).format(\'mm\') }} }}</span>\n' +
+    '            <div class="lx-time-picker__current-time">\n' +
+    '                <div class="lx-time-picker__current-hour">\n' +
+    '                    <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousHour()">\n' +
+    '                        <i class="mdi mdi-chevron-up"></i>\n' +
+    '                    </button>\n' +
+    '                    <div class="lx-time-picker__hour">\n' +
+    '                        <div class="btn btn--xl tc-white bgc-teal-600 btn--icon">\n' +
+    '                            <input type="text" class="lx-time-picker__manual-input" maxlength="2" ng-model="display.hours">\n' +
+    '                        </div>\n' +
+    '                    </div>\n' +
+    '                    <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextHour()">\n' +
+    '                        <i class="mdi mdi-chevron-down"></i>\n' +
+    '                    </button>\n' +
     '                </div>\n' +
-    '                <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextMinute()">\n' +
-    '                    <i class="mdi mdi-chevron-down"></i>\n' +
-    '                </button>\n' +
+    '                <div class="lx-time-picker__specator">:</div>\n' +
+    '                <div class="lx-time-picker__current-minute">\n' +
+    '                    <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="previousMinute()">\n' +
+    '                        <i class="mdi mdi-chevron-up"></i>\n' +
+    '                    </button>\n' +
+    '                    <div class="lx-time-picker__minute">\n' +
+    '                        <div class="btn btn--xl tc-white bgc-teal-600 btn--icon">\n' +
+    '                            <input type="text" class="lx-time-picker__manual-input" maxlength="2" ng-model="display.minutes">\n' +
+    '                        </div>\n' +
+    '                    </div>\n' +
+    '                    <button class="btn btn--l btn--teal btn--icon" lx-ripple ng-click="nextMinute()">\n' +
+    '                        <i class="mdi mdi-chevron-down"></i>\n' +
+    '                    </button>\n' +
+    '                </div>\n' +
     '            </div>\n' +
-    '        </div>\n' +
     '\n' +
-    '        <div class="lx-time-picker__actions">\n' +
-    '            <button class="btn btn--m btn--teal btn--flat" lx-ripple ng-click="closePicker()">Ok</button>\n' +
+    '            <div class="lx-time-picker__actions">\n' +
+    '                <button class="btn btn--m btn--teal btn--flat" lx-ripple ng-click="closePicker()">Ok</button>\n' +
+    '            </div>\n' +
     '        </div>\n' +
     '    </div>\n' +
     '</div>');

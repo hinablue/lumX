@@ -46,10 +46,34 @@
 }
 
 // Time input
+.lx-time__input-wrapper {
+    position: relative;
+
+    &:hover {
+        .lx-date__clear {
+            opacity: 1;
+        }
+    }
+}
+
 .lx-time-input {
     &,
     input {
         cursor: pointer !important;
+    }
+}
+
+.lx-time__clear {
+    display: block;
+    @include position(absolute, null 0 $base-spacing-unit null);
+    opacity: 0;
+    cursor: pointer;
+    line-height: $base-spacing-unit * 4;
+    @include transition-property(opacity, color);
+    @include transition-duration(.2s);
+
+    &:hover {
+        color: $red-500;
     }
 }
 
@@ -74,9 +98,27 @@
     @include transform(translateY(0));
 }
 
+.lx-time-picker__header {
+    @include position(absolute, 0 0 null 0);
+}
+
+    .lx-time-picker__now {
+        background-color: $teal-700;
+
+        span {
+            display: block;
+            @include font-size(14px);
+            text-align: center;
+            text-transform: capitalize;
+            font-weight: bold;
+            line-height: 32px;
+            color: $white-1;
+        }
+    }
+
 .lx-time-picker__current-time {
 	text-align: center;
-	margin-top: 1rem;
+	margin-top: 2rem;
 }
 	.lx-time-picker__specator {
 		@include font-size(48px);
@@ -95,5 +137,13 @@
     .lx-time-picker__actions {
         padding: $base-spacing-unit;
         border-top: 1px solid $black-4;
+        text-align: center;
+    }
+
+    .lx-time-picker__manual-input {
+        background: transparent;
+        outline: none;
+        border: 0 none;
+        width: 3rem;
         text-align: center;
     }
