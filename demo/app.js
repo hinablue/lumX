@@ -336,7 +336,7 @@ angular
 
         $scope.showCircularProgress = function()
         {
-            LxProgressService.circular.show('#5fa2db', '#progress');
+            LxProgressService.circular.show('primary', '#progress');
         };
 
         $scope.showSmallCircularProgress = false;
@@ -353,7 +353,7 @@ angular
 
         $scope.showLinearProgress = function()
         {
-            LxProgressService.linear.show('#5fa2db', '#progress');
+            LxProgressService.linear.show('primary', '#progress');
         };
 
         $scope.hideLinearProgress = function()
