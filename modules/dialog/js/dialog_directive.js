@@ -2,8 +2,8 @@
 'use strict'; // jshint ignore:line
 
 
-angular.module('lumx.dialog', [])
-    .service('LxDialogService', ['$rootScope', '$timeout', '$interval', '$window', function($rootScope, $timeout, $interval, $window)
+angular.module('lumx.dialog', ['lumx.utils.event-scheduler'])
+    .service('LxDialogService', ['$rootScope', '$timeout', '$interval', '$window', 'LxEventSchedulerService', function($rootScope, $timeout, $interval, $window, LxEventSchedulerService)
     {
         var self = this,
             dialogInterval,
@@ -17,7 +17,8 @@ angular.module('lumx.dialog', [])
             dialogContent,
             dialogActions,
             dialogScrollable,
-            resizeDebounce;
+            resizeDebounce,
+            idEventScheduler;
 
         this.registerScope = function(dialogId, dialogScope)
         {
@@ -47,6 +48,11 @@ angular.module('lumx.dialog', [])
                 });
             }
 
+            if (angular.isUndefined(scopeMap[dialogId].lxDialogEscapeClose) || scopeMap[dialogId].lxDialogEscapeClose === 'true')
+            {
+                idEventScheduler = LxEventSchedulerService.register('keyup', onKeyUp);
+            }
+
             scopeMap[dialogId].lxDialogElement
                 .appendTo('body')
                 .show();
@@ -70,51 +76,94 @@ angular.module('lumx.dialog', [])
             }, 500);
         };
 
-        this.close = function(dialogId)
+        this.close = function(dialogId, skipBeforeClose)
         {
-            angular.element('.dialog__scrollable').off('scroll', checkScrollEnd);
-
-            activeDialogId = undefined;
-            $rootScope.$broadcast('lx-dialog__close-start', dialogId);
-            if (resizeDebounce)
+            var carryOnClose = function()
             {
-                $timeout.cancel(resizeDebounce);
+                if (angular.isDefined(idEventScheduler))
+                {
+                    $timeout(function()
+                    {
+                        LxEventSchedulerService.unregister(idEventScheduler);
+                        idEventScheduler = undefined;
+                    }, 1);
+                }
+
+                angular.element('.dialog__scrollable').off('scroll', checkScrollEnd);
+
+                activeDialogId = undefined;
+                $rootScope.$broadcast('lx-dialog__close-start', dialogId);
+                if (resizeDebounce)
+                {
+                    $timeout.cancel(resizeDebounce);
+                }
+
+                $interval.cancel(dialogInterval);
+
+                dialogFilter.removeClass('dialog-filter--is-shown');
+                scopeMap[dialogId].lxDialogElement.removeClass('dialog--is-shown');
+
+                if (scopeMap[dialogId].lxDialogOnclose)
+                {
+                    scopeMap[dialogId].lxDialogOnclose();
+                }
+
+                $timeout(function()
+                {
+                    angular.element('body').css({
+                        overflow: 'visible'
+                    });
+
+                    dialogFilter.remove();
+
+                    dialog = undefined;
+                    dialogHeader = undefined;
+                    dialogContent = undefined;
+                    dialogActions = undefined;
+                    dialogScrollable = undefined;
+
+                    scopeMap[dialogId].lxDialogElement
+                        .hide()
+                        .removeClass('dialog--is-fixed')
+                        .appendTo(scopeMap[dialogId].lxDialogParent);
+
+                    scopeMap[dialogId].lxDialogIsOpened = false;
+                    dialogHeight = undefined;
+                    $rootScope.$broadcast('lx-dialog__close-end', dialogId);
+                }, 600);
+            };
+
+            if (skipBeforeClose || angular.isUndefined(scopeMap[dialogId].lxDialogBeforeClose) || !angular.isFunction(scopeMap[dialogId].lxDialogBeforeClose))
+            {
+                carryOnClose();
             }
-
-            $interval.cancel(dialogInterval);
-
-            dialogFilter.removeClass('dialog-filter--is-shown');
-            scopeMap[dialogId].lxDialogElement.removeClass('dialog--is-shown');
-
-            if (scopeMap[dialogId].lxDialogOnclose)
+            else
             {
-                scopeMap[dialogId].lxDialogOnclose();
+                var carryOn = scopeMap[dialogId].lxDialogBeforeClose();
+
+                if (angular.isObject(carryOn) && angular.isDefined(carryOn.then))
+                {
+                    carryOn.then(carryOnClose);
+                }
+                else
+                {
+                    if (carryOn)
+                    {
+                        carryOnClose();
+                    }
+                }
             }
-
-            $timeout(function()
-            {
-                angular.element('body').css({
-                    overflow: 'visible'
-                });
-
-                dialogFilter.remove();
-
-                dialog = undefined;
-                dialogHeader = undefined;
-                dialogContent = undefined;
-                dialogActions = undefined;
-                dialogScrollable = undefined;
-
-                scopeMap[dialogId].lxDialogElement
-                    .hide()
-                    .removeClass('dialog--is-fixed')
-                    .appendTo(scopeMap[dialogId].lxDialogParent);
-
-                scopeMap[dialogId].lxDialogIsOpened = false;
-                dialogHeight = undefined;
-                $rootScope.$broadcast('lx-dialog__close-end', dialogId);
-            }, 600);
         };
+
+        function onKeyUp(event)
+        {
+            if (event.keyCode == 27 && angular.isDefined(activeDialogId))
+            {
+                self.close(activeDialogId);
+            }
+
+            event.stopPropagation();
+        }
 
         function checkDialogHeight(dialogId)
         {
@@ -246,6 +295,19 @@ angular.module('lumx.dialog', [])
                     scope.lxDialogAutoClose = newValue;
                 });
 
+                attrs.$observe('escapeClose', function(newValue)
+                {
+                    scope.lxDialogEscapeClose = newValue;
+                });
+
+                attrs.$observe('beforeClose', function(newValue)
+                {
+                    scope.lxDialogBeforeClose = function()
+                    {
+                        return scope.$eval(newValue);
+                    };
+                });
+
                 attrs.$observe('onclose', function(newValue)
                 {
                     scope.lxDialogOnclose = function()
@@ -268,11 +330,17 @@ angular.module('lumx.dialog', [])
     {
         return {
             restrict: 'A',
-            link: function(scope, element)
+            scope: true,
+            link: function(scope, element, attrs)
             {
+                attrs.$observe('lxDialogClose', function(newValue)
+                {
+                    scope.lxDialogCloseSkipBefore = newValue;
+                });
+
                 element.on('click', function()
                 {
-                    LxDialogService.close(element.parents('.dialog').attr('id'));
+                    LxDialogService.close(element.parents('.dialog').attr('id'), scope.lxDialogCloseSkipBefore);
                 });
             }
         };

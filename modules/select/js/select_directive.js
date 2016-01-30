@@ -34,8 +34,8 @@ angular.module('lumx.select', [])
             return $filter('filter')(toFilter, textFilter);
         };
     }])
-    .controller('LxSelectController', ['$scope', '$filter', '$interpolate', '$sce', '$timeout',
-                                       function($scope, $filter, $interpolate, $sce, $timeout)
+    .controller('LxSelectController', ['$scope', '$filter', '$compile', '$sce', '$timeout', '$interpolate',
+                                       function($scope, $filter, $compile, $sce, $timeout, $interpolate)
     {
         var newModel = false,
             newSelection = true,
@@ -289,8 +289,9 @@ angular.module('lumx.select', [])
                     $scope.lxSelectData.selectedTransclude(newScope, function(clone)
                     {
                         var div = angular.element('<div/>');
-                        var content = $interpolate(clone.html())(newScope);
-                        clone.html(content);
+                        var wrapper = angular.element('<div/>').append(clone);
+                        var content = $compile(wrapper.html())(newScope);
+                        clone.html($interpolate(content.html())(newScope));
 
                         if ($scope.lxSelectMultiple)
                         {
@@ -349,7 +350,7 @@ angular.module('lumx.select', [])
 
         $scope.$watch('lxSelectData.filter', function(newValue, oldValue)
         {
-            if(angular.isUndefined($scope.lxSelectMinLength) || (newValue && $scope.lxSelectMinLength <= newValue.length))
+            if (newValue !== oldValue && (angular.isUndefined($scope.lxSelectMinLength) || (newValue && $scope.lxSelectMinLength <= newValue.length)))
             {
                 if ($scope.lxSelectFilter)
                 {
@@ -383,12 +384,14 @@ angular.module('lumx.select', [])
             replace: true,
             link: function(scope, element, attrs, ngModel)
             {
-                scope.lxSelectMultiple = angular.isDefined(attrs.multiple);
+                scope.lxSelectMultiple = angular.isDefined(attrs.multiple) && scope.$eval(attrs.multiple) !== false;
+                scope.lxSelectDefaultMaxResults = angular.isDefined(attrs.maxResults) ? scope.$eval(attrs.maxResults) : 100;
                 scope.lxSelectFloatingLabel = angular.isDefined(attrs.floatingLabel);
                 scope.lxSelectTree = angular.isDefined(attrs.tree);
                 scope.lxSelectNgModel = ngModel;
 
                 // Default values
+                scope.lxSelectCustom = undefined;
                 scope.lxSelectPlaceholder = '';
                 scope.lxSelectLoading = '';
                 scope.lxSelectMinLength = undefined;
@@ -401,6 +404,11 @@ angular.module('lumx.select', [])
                 scope.lxSelectFilter = undefined;
                 scope.lxSelectSelectionToModel = undefined;
                 scope.lxSelectModelToSelection = undefined;
+
+                attrs.$observe('custom', function(newValue)
+                {
+                    scope.lxSelectCustom = newValue;
+                });
 
                 attrs.$observe('placeholder', function(newValue)
                 {

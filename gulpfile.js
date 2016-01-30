@@ -21,7 +21,12 @@ var paths = {
         'build/js/templates/select_template.js',
         'build/js/templates/tabs_template.js',
         'build/js/templates/date-picker_template.js',
-        'build/js/templates/progress_template.js'
+        'build/js/templates/progress_template.js',
+        'build/js/templates/button_template.js',
+        'build/js/templates/checkbox_template.js',
+        'build/js/templates/radio-button_template.js',
+        'build/js/templates/switch_template.js',
+        'build/js/templates/fab_template.js'
     ],
     demo: [
         'demo/**/*',
@@ -270,7 +275,67 @@ gulp.task('tpl:progress', function()
         .pipe(gulp.dest('build/js/templates'));
 });
 
-gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress'], function()
+gulp.task('tpl:button', function()
+{
+    return gulp.src('modules/button/views/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'button_template.js',
+            moduleName: 'lumx.button',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js/templates'));
+});
+
+gulp.task('tpl:checkbox', function()
+{
+    return gulp.src('modules/checkbox/views/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'checkbox_template.js',
+            moduleName: 'lumx.checkbox',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js/templates'));
+});
+
+gulp.task('tpl:radio-button', function()
+{
+    return gulp.src('modules/radio-button/views/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'radio-button_template.js',
+            moduleName: 'lumx.radio-button',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js/templates'));
+});
+
+gulp.task('tpl:switch', function()
+{
+    return gulp.src('modules/switch/views/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'switch_template.js',
+            moduleName: 'lumx.switch',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js/templates'));
+});
+
+gulp.task('tpl:fab', function()
+{
+    return gulp.src('modules/fab/views/*.html')
+        .pipe(plugins.plumber())
+        .pipe(plugins.templatecache({
+            output: 'fab_template.js',
+            moduleName: 'lumx.fab',
+            strip: 'views/'
+        }))
+        .pipe(gulp.dest('build/js/templates'));
+});
+
+gulp.task('dist:scripts', ['tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress', 'tpl:button', 'tpl:checkbox', 'tpl:radio-button', 'tpl:switch', 'tpl:fab'], function()
 {
     return gulp.src(paths.js.concat(paths.templates))
         .pipe(plugins.plumber())
@@ -304,11 +369,16 @@ gulp.task('watch', ['build'], function()
     watcherWithCache('tpl:tabs', 'modules/tabs/views/*.html', ['tpl:tabs']);
     watcherWithCache('tpl:date-picker', 'modules/date-picker/views/*.html', ['tpl:date-picker']);
     watcherWithCache('tpl:progress', 'modules/progress/views/*.html', ['tpl:progress']);
+    watcherWithCache('tpl:button', 'modules/button/views/*.html', ['tpl:button']);
+    watcherWithCache('tpl:checkbox', 'modules/checkbox/views/*.html', ['tpl:checkbox']);
+    watcherWithCache('tpl:radio-button', 'modules/radio-button/views/*.html', ['tpl:radio-button']);
+    watcherWithCache('tpl:switch', 'modules/switch/views/*.html', ['tpl:switch']);
+    watcherWithCache('tpl:fab', 'modules/fab/views/*.html', ['tpl:fab']);
 });
 
 gulp.task('clean', ['clean:build', 'clean:dist']);
 
-gulp.task('build', ['lint', 'scss', 'fonts', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress']);
+gulp.task('build', ['lint', 'scss', 'fonts', 'demo', 'examples', 'libs', 'tpl:dropdown', 'tpl:file-input', 'tpl:text-field', 'tpl:search-filter', 'tpl:select', 'tpl:tabs', 'tpl:date-picker', 'tpl:progress', 'tpl:button', 'tpl:checkbox', 'tpl:radio-button', 'tpl:switch', 'tpl:fab']);
 gulp.task('dist', ['clean:dist'], function()
 {
     gulp.start('dist:css');

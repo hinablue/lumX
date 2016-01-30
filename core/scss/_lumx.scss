@@ -3,15 +3,15 @@
 //\*------------------------------------*/
 
 @import "bourbon";
-@import "materialdesignicons.scss";
+@import "materialdesignicons";
 
 @import "settings/colors";
 @import "settings/defaults";
 @import "settings/responsive";
 
-@import "tools/functions";
 @import "tools/mixins";
 @import "tools/responsive";
+@import "tools/widths";
 
 @import "generic/normalize";
 @import "generic/box-sizing";
@@ -24,10 +24,10 @@
 @import "base/colors";
 
 @import "trumps/widths";
+@import "trumps/widths-responsive";
 @import "trumps/spacing";
 @import "trumps/helpers";
 
-@import "animations/jelly";
 @import "animations/ripple";
 @import "animations/spin";
 

@@ -1,5 +1,5 @@
 ///*------------------------------------*\
-//    #OBJECTS-BUTTON
+//    #BUTTON
 //\*------------------------------------*/
 
 // Button vars
@@ -31,7 +31,6 @@ $btn-icon-size: ('xs': 13px, 's': 15px, 'm': 20px, 'l': 24px, 'xl': 28px);
     margin: 0;
     padding: 0;
     border: none;
-    border-radius: $base-round;
     background-color: transparent;
     font-weight: 400;
     text-align: center;
@@ -67,6 +66,10 @@ $btn-icon-size: ('xs': 13px, 's': 15px, 'm': 20px, 'l': 24px, 'xl': 28px);
 
     @if $type == 'flat' or $type == 'icon' {
         background-color: transparent !important;
+    }
+
+    .ripple {
+        display: none;
     }
 }
 
@@ -124,6 +127,10 @@ $btn-icon-size: ('xs': 13px, 's': 15px, 'm': 20px, 'l': 24px, 'xl': 28px);
 }
 
 @mixin btn-type($type) {
+    @if $type == 'raised' or $type == 'flat' {
+        border-radius: $base-round;
+    }
+
     @if $type == 'raised' or $type == 'fab' {
         @include z-depth(1);
         @include transition-property(box-shadow);
