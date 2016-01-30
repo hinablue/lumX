@@ -22,7 +22,7 @@ angular.module('lumx', [
     'lumx.scrollbar',
     'lumx.search-filter',
     'lumx.date-picker',
-    'lumx.time-picker'
+    'lumx.time-picker',
     'lumx.select',
     'lumx.switch',
     'lumx.tabs',
