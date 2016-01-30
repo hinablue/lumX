@@ -22,7 +22,7 @@ var paths = {
         'build/js/templates/tabs_template.js',
         'build/js/templates/date-picker_template.js',
         'build/js/templates/time-picker_template.js',
-        'build/js/templates/progress_template.js'
+        'build/js/templates/progress_template.js',
         'build/js/templates/button_template.js',
         'build/js/templates/checkbox_template.js',
         'build/js/templates/radio-button_template.js',
