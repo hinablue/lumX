@@ -18,6 +18,7 @@
 @import "generic/reset";
 
 @import "base/page";
+@import "base/flexbox";
 @import "base/images";
 @import "base/paragraph";
 @import "base/typography";
@@ -45,14 +46,12 @@
 @import "modules/dropdown";
 @import "modules/fab";
 @import "modules/file-input";
-@import "modules/flexbox";
 @import "modules/icon";
 @import "modules/list";
 @import "modules/notification";
 @import "modules/progress";
 @import "modules/radio-button";
 @import "modules/ripple";
-@import "modules/scrollbar";
 @import "modules/search-filter";
 @import "modules/select";
 @import "modules/switch";

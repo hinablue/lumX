@@ -1,0 +1,12 @@
+<div class="p+">
+    {{ vm.timePicker.basic.dateFormatted }}
+
+    <div class="mt">
+        <lx-button ng-click="vm.openTimePicker(vm.timePickerId)">Open time picker</lx-button>
+    </div>
+
+    <lx-time-picker id="{{ vm.timePickerId }}"
+                    ng-model="vm.timePicker.basic.date"
+                    lx-callback="vm.timePickerCallback(newTime)"
+                    lx-locale="{{ vm.locale }}"></lx-time-picker>
+</div>

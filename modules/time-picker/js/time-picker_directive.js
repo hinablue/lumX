@@ -1,235 +1,159 @@
-/* global angular */
-/* global moment */
-/* global navigator */
-'use strict'; // jshint ignore:line
+(function()
+{
+    'use strict';
 
+    angular
+        .module('lumx.time-picker')
+        .directive('lxTimePicker', lxTimePicker);
 
-angular.module('lumx.time-picker', [])
-    .controller('lxTimePickerController', ['$scope', '$timeout', '$window', function($scope, $timeout, $window)
+    lxTimePicker.$inject = ['LxTimePickerService', 'LxUtils'];
+
+    function lxTimePicker(LxTimePickerService, LxUtils)
     {
-        var self = this,
-            activeLocale,
-            $timePicker,
-            $timePickerFilter,
-            $timePickerContainer,
-            $computedWindow;
-
-        $scope.ctrlData = {
-            isOpen: false
+        return {
+            restrict: 'AE',
+            templateUrl: 'time-picker.html',
+            scope:
+            {
+                autoClose: '=?lxAutoClose',
+                callback: '&?lxCallback',
+                color: '@?lxColor',
+                escapeClose: '=?lxEscapeClose',
+                ngModel: '=',
+                locale: '@lxLocale'
+            },
+            link: link,
+            controller: LxTimePickerController,
+            controllerAs: 'lxTimePicker',
+            bindToController: true,
+            replace: true,
+            transclude: true
         };
 
-        $scope.display = {
-            hours: moment().format('HH'),
-            minutes: moment().format('mm')
-        };
+        function link(scope, element, attrs)
+        {
+            if (angular.isDefined(attrs.id))
+            {
+                attrs.$observe('id', function(_newId)
+                {
+                    scope.lxTimePicker.pickerId = _newId;
+                    LxTimePickerService.registerScope(scope.lxTimePicker.pickerId, scope);
+                });
+            }
+            else
+            {
+                scope.lxTimePicker.pickerId = LxUtils.generateUUID();
+                LxTimePickerService.registerScope(scope.lxTimePicker.pickerId, scope);
+            }
+        }
+    }
 
-        $scope.$watch('display', function(newValue, oldValue) {
-            if (!angular.equals(newValue, oldValue)) {
-                var hours = parseInt(newValue.hours, 10), minutes = parseInt(newValue.minutes, 10);
+    LxTimePickerController.$inject = ['$element', '$scope', '$timeout', '$transclude', 'LxTimePickerService'];
 
-                if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-                    if (hours < 0 || hours > 23) {
-                        $scope.display.hours = oldValue.hours;
-                    }
-                    if (minutes < 0 || minutes > 59) {
-                        $scope.display.minutes = oldValue.minutes;
-                    }
+    function LxTimePickerController($element, $scope, $timeout, $transclude, LxTimePickerService)
+    {
+        var lxTimePicker = this;
+        var input;
+        var modelController;
+        var timer1;
+
+        lxTimePicker.closeTimePicker = closeTimePicker;
+        lxTimePicker.openTimePicker = openTimePicker;
+        lxTimePicker.previousHour = previousHour;
+        lxTimePicker.previousMinute = previousMinute;
+        lxTimePicker.nextHour = nextHour;
+        lxTimePicker.nextMinute = nextMinute;
+
+        lxTimePicker.autoClose = angular.isDefined(lxTimePicker.autoClose) ? lxTimePicker.autoClose : true;
+        lxTimePicker.color = angular.isDefined(lxTimePicker.color) ? lxTimePicker.color : 'primary';
+        lxTimePicker.element = $element.find('.lx-time-picker');
+        lxTimePicker.escapeClose = angular.isDefined(lxTimePicker.escapeClose) ? lxTimePicker.escapeClose : true;
+        lxTimePicker.isOpen = false;
+        lxTimePicker.moment = moment;
+
+        $transclude(function(clone)
+        {
+            if (clone.length)
+            {
+                lxTimePicker.hasInput = true;
+
+                timer1 = $timeout(function()
+                {
+                    input = $element.find('.lx-time-input input');
+                    modelController = input.data('$ngModelController');
+                });
+            }
+        });
+
+        $scope.$on('$destroy', function()
+        {
+            $timeout.cancel(timer1);
+        });
+
+        $scope.$watch('lxTimePicker.display', function(newTime, oldTime) {
+            if (false === angular.equals(newTime, oldTime)) {
+                if (newTime.hours < 0 || newTime.hours > 23 || newTime.minutes < 0 || newTime.minutes > 59) {
                 } else {
-                    $timeout(function() {
-                        $scope.activeTime = moment($scope.selected.date).hours(hours).minutes(minutes);
-                        $scope.selected.date = $scope.activeTime;
-                        $scope.selected.model = $scope.activeTime.format('HH:mm');
-                    }, 100);
+                    lxTimePicker.ngModelClone.hour(newTime.hours);
+                    lxTimePicker.ngModelClone.minute(newTime.minutes);
+
+                    lxTimePicker.ngModel = lxTimePicker.ngModelClone.toDate();
+                    lxTimePicker.ngModelMoment = lxTimePicker.ngModelClone.clone();
+
+                    if (angular.isDefined(lxTimePicker.callback))
+                    {
+                        lxTimePicker.callback(
+                        {
+                            newTime: lxTimePicker.ngModel
+                        });
+                    }
+
+                    if (angular.isDefined(modelController))
+                    {
+                        modelController.$setViewValue(lxTimePicker.ngModelMoment.clone().format('HH:mm'));
+                        modelController.$render();
+                    }
                 }
             }
         }, true);
 
-        this.init = function(element, locale)
+        init();
+
+        function closeTimePicker()
         {
-            $timePicker = element.find('.lx-time-picker');
-            $timePickerContainer = element;
-            $computedWindow = angular.element($window);
+            LxTimePickerService.close(lxTimePicker.pickerId);
+        }
 
-            self.build(locale, false);
-        };
-
-        this.build = function(locale, isNewModel)
+        function openTimePicker()
         {
-            if (locale === activeLocale && !isNewModel)
-            {
-                return;
-            }
-
-            activeLocale = locale;
-
-            moment.locale(activeLocale);
-
-            if (angular.isDefined($scope.model))
-            {
-                if (typeof $scope.model === 'string' && /\d{2}:\d{2}/gi.test($scope.model))
-                {
-                    var time = $scope.model.split(':');
-                    $scope.selected = {
-                        model: moment().hours(time[0]).minutes(time[1]).format('HH:mm'),
-                        date: moment().hours(time[0]).minutes(time[1])
-                    };
-                } else {
-                    $scope.selected = {
-                        model: moment($scope.model).format('HH:mm'),
-                        date: $scope.model
-                    };
-                }
-            }
-            else
-            {
-                $scope.selected = {
-                    model: undefined,
-                    date: new Date()
-                };
-            }
-
-            $scope.display = {
-                hours: moment($scope.selected.date).format('HH'),
-                minutes: moment($scope.selected.date).format('mm')
-            };
-
-            $scope.activeTime = moment($scope.selected.date);
-            $scope.moment = moment;
-        };
-
-        $scope.previousHour = function()
+            LxTimePickerService.open(lxTimePicker.pickerId);
+        }
+        function init()
         {
-            $scope.activeTime = $scope.activeTime.add(-1, 'hour');
-            generateTimetable();
-        };
+            moment.locale(lxTimePicker.locale);
 
-        $scope.nextHour = function()
-        {
-            $scope.activeTime = $scope.activeTime.add(1, 'hour');
-            generateTimetable();
-        };
-
-        $scope.previousMinute = function()
-        {
-            $scope.activeTime = $scope.activeTime.add(-1, 'minute');
-            generateTimetable();
-        };
-
-        $scope.nextMinute = function()
-        {
-            $scope.activeTime = $scope.activeTime.add(1, 'minute');
-            generateTimetable();
-        };
-
-        $scope.openPicker = function()
-        {
-
-            if ($scope.ctrlData.isOpen) {
-                return;
-            }
-
-            $scope.ctrlData.isOpen = true;
-
-            $timeout(function() {
-                $timePickerFilter = angular.element('<div/>', {
-                    class: 'lx-time-filter'
-                });
-
-                $timePickerFilter
-                    .appendTo('body')
-                    .on('click', function()
-                    {
-                        $scope.closePicker();
-                    });
-
-                $timePicker
-                    .appendTo('body')
-                    .show();
-
-                $timeout(function()
-                {
-                    $timePickerFilter.addClass('lx-time-filter--is-shown');
-                    $timePicker.addClass('lx-time-picker--is-shown');
-                }, 100);
-            });
-        };
-
-        $scope.closePicker = function()
-        {
-
-            if (!$scope.ctrlData.isOpen) {
-                return;
-            }
-
-            $timePickerFilter.removeClass('lx-time-filter--is-shown');
-            $timePicker.removeClass('lx-time-picker--is-shown');
-
-            $computedWindow.off('resize');
-
-            $scope.model = $scope.activeTime.toDate();
-
-            $timeout(function()
-            {
-                $timePickerFilter.remove();
-
-                $timePicker
-                    .hide()
-                    .appendTo($timePickerContainer);
-
-                $scope.ctrlData.isOpen = false;
-            }, 600);
-        };
-
-        function generateTimetable() {
-            $scope.selected.date = $scope.activeTime;
-            $scope.selected.model = $scope.activeTime.format('HH:mm');
-
-            $scope.display = {
-                hours: moment($scope.selected.date).format('HH'),
-                minutes: moment($scope.selected.date).format('mm')
+            lxTimePicker.ngModelMoment = angular.isDefined(lxTimePicker.ngModel) ? moment(angular.copy(lxTimePicker.ngModel)) : moment();
+            lxTimePicker.ngModelClone = lxTimePicker.ngModelMoment.clone();
+            lxTimePicker.display = {
+                hours: lxTimePicker.ngModelClone.format('HH'),
+                minutes: lxTimePicker.ngModelClone.format('mm')
             };
         }
-    }])
-    .directive('lxTimePicker', function()
-    {
-        return {
-            restrict: 'AE',
-            controller: 'lxTimePickerController',
-            scope: {
-                model: '=',
-                label: '@',
-                fixedLabel: '&',
-                icon: '@'
-            },
-            templateUrl: 'time-picker.html',
-            link: function(scope, element, attrs, ctrl)
-            {
-                ctrl.init(element, checkLocale(attrs.locale));
-
-                attrs.$observe('locale', function()
-                {
-                    ctrl.build(checkLocale(attrs.locale), false);
-                });
-
-                scope.$watch('model', function (newVal)
-                {
-                    ctrl.build(checkLocale(attrs.locale), true);
-                });
-
-                attrs.$observe('allowClear', function(newValue)
-                {
-                    scope.allowClear = !!(angular.isDefined(newValue) && newValue === 'true');
-                });
-
-                function checkLocale(locale)
-                {
-                    if (!locale)
-                    {
-                        return (navigator.language !== null ? navigator.language : navigator.browserLanguage).split("_")[0].split("-")[0] || 'en';
-                    }
-
-                    return locale;
-                }
-            }
-        };
-    });
+        function previousHour() {
+            lxTimePicker.ngModelClone.add(-1, 'hour');
+            lxTimePicker.display.hours = lxTimePicker.ngModelClone.format('HH');
+        }
+        function nextHour() {
+            lxTimePicker.ngModelClone.add(1, 'hour');
+            lxTimePicker.display.hours = lxTimePicker.ngModelClone.format('HH');
+        }
+        function previousMinute() {
+            lxTimePicker.ngModelClone.add(-1, 'minute');
+            lxTimePicker.display.minutes = lxTimePicker.ngModelClone.format('mm');
+        }
+        function nextMinute() {
+            lxTimePicker.ngModelClone.add(1, 'minute');
+            lxTimePicker.display.minutes = lxTimePicker.ngModelClone.format('mm');
+        }
+    }
+})();

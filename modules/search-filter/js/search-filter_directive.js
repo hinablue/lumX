@@ -1,82 +1,161 @@
-/* global angular */
-'use strict'; // jshint ignore:line
+(function()
+{
+    'use strict';
 
+    angular
+        .module('lumx.search-filter')
+        .directive('lxSearchFilter', lxSearchFilter);
 
-angular.module('lumx.search-filter', [])
-    .directive('lxSearchFilter', ['$timeout', function($timeout)
+    function lxSearchFilter()
     {
         return {
             restrict: 'E',
             templateUrl: 'search-filter.html',
-            scope: {
-                model: '=?',
-                theme: '@',
-                placeholder: '@'
-            },
-            link: function(scope, element, attrs)
+            scope:
             {
-                var $input = element.find('.search-filter__input'),
-                    $label = element.find('.search-filter__label'),
-                    $searchFilter = element.find('.search-filter'),
-                    $searchFilterContainer = element.find('.search-filter__container');
-
-                scope.closed = angular.isDefined(attrs.closed);
-
-                if (angular.isUndefined(scope.theme))
-                {
-                    scope.theme = 'light';
-                }
-
-                attrs.$observe('filterWidth', function(filterWidth)
-                {
-                    $searchFilterContainer.css({ width: filterWidth });
-                });
-
-                // Events
-                $input
-                    .on('blur', function()
-                    {
-                        if (angular.isDefined(attrs.closed) && !$input.val())
-                        {
-                            $searchFilter.velocity({ 
-                                width: 40
-                            }, {
-                                duration: 400,
-                                easing: 'easeOutQuint',
-                                queue: false
-                            });
-                        }
-                    });
-
-                $label.on('click', function()
-                {
-                    if (angular.isDefined(attrs.closed))
-                    {
-                        $searchFilter.velocity({ 
-                            width: attrs.filterWidth ? attrs.filterWidth: 240
-                        }, {
-                            duration: 400,
-                            easing: 'easeOutQuint',
-                            queue: false
-                        });
-
-                        $timeout(function()
-                        {
-                            $input.focus();
-                        }, 401);
-                    }
-                    else
-                    {
-                        $input.focus();
-                    }
-                });
-
-                scope.clear = function()
-                {
-                    scope.model = undefined;
-
-                    $input.focus();
-                };
-            }
+                closed: '=?lxClosed',
+                color: '@?lxColor',
+                width: '@?lxWidth'
+            },
+            link: link,
+            controller: LxSearchFilterController,
+            controllerAs: 'lxSearchFilter',
+            bindToController: true,
+            replace: true,
+            transclude: true
         };
-    }]);
+
+        function link(scope, element, attrs, ctrl, transclude)
+        {
+            var input;
+
+            attrs.$observe('lxWidth', function(newWidth)
+            {
+                if (angular.isDefined(scope.lxSearchFilter.closed) && scope.lxSearchFilter.closed)
+                {
+                    element.find('.search-filter__container').css('width', newWidth);
+                }
+            });
+
+            transclude(function()
+            {
+                input = element.find('input');
+
+                ctrl.setInput(input);
+                ctrl.setModel(input.data('$ngModelController'));
+
+                input.on('blur', ctrl.blurInput);
+            });
+
+            scope.$on('$destroy', function()
+            {
+                input.off();
+            });
+        }
+    }
+
+    LxSearchFilterController.$inject = ['$element'];
+
+    function LxSearchFilterController($element)
+    {
+        var lxSearchFilter = this;
+        var input;
+        var modelController;
+
+        lxSearchFilter.blurInput = blurInput;
+        lxSearchFilter.clearInput = clearInput;
+        lxSearchFilter.getClass = getClass;
+        lxSearchFilter.openInput = openInput;
+        lxSearchFilter.setInput = setInput;
+        lxSearchFilter.setModel = setModel;
+
+        lxSearchFilter.color = angular.isDefined(lxSearchFilter.color) ? lxSearchFilter.color : 'black';
+
+        ////////////
+
+        function blurInput()
+        {
+            if (angular.isDefined(lxSearchFilter.closed) && lxSearchFilter.closed && !input.val())
+            {
+                $element.velocity(
+                {
+                    width: 40
+                },
+                {
+                    duration: 400,
+                    easing: 'easeOutQuint',
+                    queue: false
+                });
+            }
+        }
+
+        function clearInput()
+        {
+            modelController.$setViewValue(undefined);
+            modelController.$render();
+
+            input.focus();
+        }
+
+        function getClass()
+        {
+            var searchFilterClass = [];
+
+            if (angular.isUndefined(lxSearchFilter.closed) || !lxSearchFilter.closed)
+            {
+                searchFilterClass.push('search-filter--opened-mode');
+            }
+
+            if (angular.isDefined(lxSearchFilter.closed) && lxSearchFilter.closed)
+            {
+                searchFilterClass.push('search-filter--closed-mode');
+            }
+
+            if (input.val())
+            {
+                searchFilterClass.push('search-filter--has-clear-button');
+            }
+
+            if (angular.isDefined(lxSearchFilter.color))
+            {
+                searchFilterClass.push('search-filter--' + lxSearchFilter.color);
+            }
+
+            return searchFilterClass;
+        }
+
+        function openInput()
+        {
+            if (angular.isDefined(lxSearchFilter.closed) && lxSearchFilter.closed)
+            {
+                $element.velocity(
+                {
+                    width: angular.isDefined(lxSearchFilter.width) ? lxSearchFilter.width : 240
+                },
+                {
+                    duration: 400,
+                    easing: 'easeOutQuint',
+                    queue: false,
+                    complete: function()
+                    {
+                        input.focus();
+                    }
+                });
+            }
+            else
+            {
+                input.focus();
+            }
+        }
+
+        function setInput(_input)
+        {
+            input = _input;
+        }
+
+        function setModel(_modelControler)
+        {
+            modelController = _modelControler;
+        }
+    }
+})();

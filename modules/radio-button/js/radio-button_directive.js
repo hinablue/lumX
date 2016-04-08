@@ -1,8 +1,9 @@
-(function() {
+(function()
+{
     'use strict';
 
     angular
-        .module('lumx.radio-button', [])
+        .module('lumx.radio-button')
         .directive('lxRadioGroup', lxRadioGroup)
         .directive('lxRadioButton', lxRadioButton)
         .directive('lxRadioButtonLabel', lxRadioButtonLabel)
@@ -10,71 +11,72 @@
 
     function lxRadioGroup()
     {
-        var directive =
-        {
+        return {
             restrict: 'E',
             templateUrl: 'radio-group.html',
-            transclude: true
+            transclude: true,
+            replace: true
         };
-
-        return directive;
     }
 
     function lxRadioButton()
     {
-        var directive =
-        {
+        return {
             restrict: 'E',
             templateUrl: 'radio-button.html',
-            scope: {
+            scope:
+            {
+                lxColor: '@?',
                 name: '@',
-                value: '@?',
-                ngModel: '=',
-                ngValue: '=?',
                 ngChange: '&?',
                 ngDisabled: '=?',
-                lxColor: '@?'
+                ngModel: '=',
+                ngValue: '=?',
+                value: '@?'
             },
             controller: LxRadioButtonController,
             controllerAs: 'lxRadioButton',
             bindToController: true,
-            transclude: true
+            transclude: true,
+            replace: true
         };
-
-        return directive;
     }
 
-    LxRadioButtonController.$inject = ['LxUtils'];
+    LxRadioButtonController.$inject = ['$scope', '$timeout', 'LxUtils'];
 
-    function LxRadioButtonController(LxUtils)
+    function LxRadioButtonController($scope, $timeout, LxUtils)
     {
         var lxRadioButton = this;
+        var radioButtonId;
+        var radioButtonHasChildren;
+        var timer;
 
-        //
-        // PRIVATE ATTRIBUTES
-        //
-
-        var _radioButtonId;
-        var _radioButtonHasChildren;
-
-        //
-        // PUBLIC ATTRIBUTES
-        //
-
-        // Public methods
         lxRadioButton.getRadioButtonId = getRadioButtonId;
         lxRadioButton.getRadioButtonHasChildren = getRadioButtonHasChildren;
         lxRadioButton.setRadioButtonId = setRadioButtonId;
         lxRadioButton.setRadioButtonHasChildren = setRadioButtonHasChildren;
+        lxRadioButton.triggerNgChange = triggerNgChange;
 
-        //
-        // PRIVATE METHODS
-        //
+        $scope.$on('$destroy', function()
+        {
+            $timeout.cancel(timer);
+        });
 
-        /**
-         * Initialize the controller
-         */
-        function _init()
+        init();
+
+        ////////////
+
+        function getRadioButtonId()
+        {
+            return radioButtonId;
+        }
+
+        function getRadioButtonHasChildren()
+        {
+            return radioButtonHasChildren;
+        }
+
+        function init()
         {
             setRadioButtonId(LxUtils.generateUUID());
             setRadioButtonHasChildren(false);
@@ -84,44 +86,28 @@
                 lxRadioButton.ngValue = lxRadioButton.value;
             }
 
-            lxRadioButton.lxColor =  angular.isUndefined(lxRadioButton.lxColor) ? 'accent' : lxRadioButton.lxColor;
+            lxRadioButton.lxColor = angular.isUndefined(lxRadioButton.lxColor) ? 'accent' : lxRadioButton.lxColor;
         }
 
-        //
-        // PUBLIC METHODS
-        //
-
-        function getRadioButtonId()
+        function setRadioButtonId(_radioButtonId)
         {
-            return _radioButtonId;
+            radioButtonId = _radioButtonId;
         }
 
-        function getRadioButtonHasChildren()
+        function setRadioButtonHasChildren(_radioButtonHasChildren)
         {
-            return _radioButtonHasChildren;
+            radioButtonHasChildren = _radioButtonHasChildren;
         }
 
-        function setRadioButtonId(radioButtonId)
+        function triggerNgChange()
         {
-            _radioButtonId = radioButtonId;
+            timer = $timeout(lxRadioButton.ngChange);
         }
-
-        function setRadioButtonHasChildren(radioButtonHasChildren)
-        {
-            _radioButtonHasChildren = radioButtonHasChildren;
-        }
-
-        //
-        // INITIALIZATION
-        //
-
-        _init();
     }
 
     function lxRadioButtonLabel()
     {
-        var directive =
-        {
+        return {
             restrict: 'AE',
             require: ['^lxRadioButton', '^lxRadioButtonLabel'],
             templateUrl: 'radio-button-label.html',
@@ -133,8 +119,6 @@
             replace: true
         };
 
-        return directive;
-
         function link(scope, element, attrs, ctrls)
         {
             ctrls[0].setRadioButtonHasChildren(true);
@@ -145,47 +129,32 @@
     function LxRadioButtonLabelController()
     {
         var lxRadioButtonLabel = this;
+        var radioButtonId;
 
-        //
-        // PRIVATE ATTRIBUTES
-        //
-
-        var _radioButtonId;
-
-        //
-        // PUBLIC ATTRIBUTES
-        //
-
-        // Public methods
         lxRadioButtonLabel.getRadioButtonId = getRadioButtonId;
         lxRadioButtonLabel.setRadioButtonId = setRadioButtonId;
 
-        //
-        // PUBLIC METHODS
-        //
+        ////////////
 
         function getRadioButtonId()
         {
-            return _radioButtonId;
+            return radioButtonId;
         }
 
-        function setRadioButtonId(radioButtonId)
+        function setRadioButtonId(_radioButtonId)
         {
-            _radioButtonId = radioButtonId;
+            radioButtonId = _radioButtonId;
         }
     }
 
     function lxRadioButtonHelp()
     {
-        var directive =
-        {
+        return {
             restrict: 'AE',
             require: '^lxRadioButton',
             templateUrl: 'radio-button-help.html',
             transclude: true,
             replace: true
         };
-
-        return directive;
     }
 })();
