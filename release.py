@@ -20,25 +20,36 @@ def checkExistingTag(version):
 
 def updateHomepage(version):
     file_str = None
-    with open('demo/includes/homepage/homepage.html') as f:
+    with open('build/includes/home/home.html') as f:
         file_str = f.read()
 
-    file_str = re.sub(r'ng-href="[^"]*" class="banner__dl-btn btn btn--xl btn--white btn--raised"',
-                      'ng-href="https://github.com/lumapps/lumX/archive/%s.zip" class="banner__dl-btn btn btn--xl btn--white btn--raised"' % version,
+    file_str = re.sub(r'href="[^"]*"',
+                      'href="https://github.com/lumapps/lumX/archive/%s.zip"' % version,
                       file_str)
 
-    file_str = re.sub(r'<span class="banner__version">[^"]*<\/span>',
-                      '<span class="banner__version">%s</span>' % version,
+    file_str = re.sub(r'<span class="home-banner__version">[^"]*<\/span>',
+                      '<span class="home-banner__version">%s</span>' % version,
                       file_str)
 
-    with open('demo/includes/homepage/homepage.html', "w") as f:
+    with open('demo/includes/home/home.html', "w") as f:
+        f.write(file_str)
+
+
+def updateGitignore():
+    file_str = None
+    with open('.gitignore') as f:
+        file_str = f.read()
+
+    file_str = re.sub(r'/dist', '', file_str)
+
+    with open('.gitignore', "w") as f:
         f.write(file_str)
 
 
 def commit(version):
     untrackedFiles = subprocess.Popen('git ls-files -o --exclude-standard'.split(), stdout=subprocess.PIPE)
     subprocess.call(('git add %s' % untrackedFiles.stdout.read().replace('\n', ' ')).split())
-    subprocess.call(['git', 'commit', '-am', '"chore release: new release %s"' % version], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    subprocess.call(['git', 'commit', '-am', 'chore release: new release %s' % version], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
     subprocess.call(('git tag %s' % version).split())
     # print "Publishing new commit to master"
     # subprocess.call('git push origin master'.split(), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
@@ -61,6 +72,7 @@ if __name__ == "__main__":
         #     checkout(sys.argv[2])
 
         updateHomepage(version)
+        updateGitignore()
         commit(version)
     except Exception as e:
         exit(-1)

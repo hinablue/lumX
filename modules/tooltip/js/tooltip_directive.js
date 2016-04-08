@@ -1,30 +1,141 @@
-/* global angular */
-'use strict'; // jshint ignore:line
+(function()
+{
+    'use strict';
 
+    angular
+        .module('lumx.tooltip')
+        .directive('lxTooltip', lxTooltip);
 
-angular.module('lumx.tooltip', [])
-    .controller('LxTooltipController', ['$scope', '$timeout', function($scope, $timeout)
+    function lxTooltip()
     {
-        var self = this,
-            tooltip,
-            tooltipContent,
-            tooltipPosition,
-            tooltipColor,
-            tooltipLabel,
-            tooltipBackground,
-            tooltipTrigger;
+        return {
+            restrict: 'A',
+            scope:
+            {
+                tooltip: '@lxTooltip',
+                position: '@?lxTooltipPosition'
+            },
+            link: link,
+            controller: LxTooltipController,
+            controllerAs: 'lxTooltip',
+            bindToController: true
+        };
 
-        this.init = function(element, attrs)
+        function link(scope, element, attrs, ctrl)
         {
-            tooltipTrigger = element;
+            if (angular.isDefined(attrs.tooltipPosition))
+            {
+                attrs.$observe('tooltipPosition', function(newValue)
+                {
+                    scope.lxTooltip.position = newValue;
+                });
+            }
 
-            tooltipContent = attrs.lxTooltip;
-            tooltipPosition = angular.isDefined(attrs.tooltipPosition) ? attrs.tooltipPosition : 'top';
-            tooltipColor = angular.isDefined(attrs.tooltipColor) ? attrs.tooltipColor : 'black';
+            element.on('mouseenter', ctrl.showTooltip);
+            element.on('mouseleave', ctrl.hideTooltip);
+
+            scope.$on('$destroy', function()
+            {
+                element.off();
+            });
+        }
+    }
+
+    LxTooltipController.$inject = ['$element', '$scope', '$timeout', 'LxDepthService'];
+
+    function LxTooltipController($element, $scope, $timeout, LxDepthService)
+    {
+        var lxTooltip = this;
+        var timer1;
+        var timer2;
+        var tooltip;
+        var tooltipBackground;
+        var tooltipLabel;
+
+        lxTooltip.hideTooltip = hideTooltip;
+        lxTooltip.showTooltip = showTooltip;
+
+        lxTooltip.position = angular.isDefined(lxTooltip.position) ? lxTooltip.position : 'top';
+
+        $scope.$on('$destroy', function()
+        {
+            if (angular.isDefined(tooltip))
+            {
+                tooltip.remove();
+            }
+
+            $timeout.cancel(timer1);
+            $timeout.cancel(timer2);
+        });
+
+        ////////////
+
+        function hideTooltip()
+        {
+            if (angular.isDefined(tooltip))
+            {
+                tooltip.removeClass('tooltip--is-active');
+
+                timer1 = $timeout(function()
+                {
+                    tooltip.remove();
+                }, 200);
+            }
+        }
+
+        function setTooltipPosition()
+        {
+            var width = $element.outerWidth(),
+                height = $element.outerHeight(),
+                top = $element.offset().top,
+                left = $element.offset().left;
+
+            tooltip
+                .append(tooltipBackground)
+                .append(tooltipLabel)
+                .appendTo('body');
+
+            if (lxTooltip.position === 'top')
+            {
+                tooltip.css(
+                {
+                    left: left - (tooltip.outerWidth() / 2) + (width / 2),
+                    top: top - tooltip.outerHeight()
+                });
+            }
+            else if (lxTooltip.position === 'bottom')
+            {
+                tooltip.css(
+                {
+                    left: left - (tooltip.outerWidth() / 2) + (width / 2),
+                    top: top + height
+                });
+            }
+            else if (lxTooltip.position === 'left')
+            {
+                tooltip.css(
+                {
+                    left: left - tooltip.outerWidth(),
+                    top: top + (height / 2) - (tooltip.outerHeight() / 2)
+                });
+            }
+            else if (lxTooltip.position === 'right')
+            {
+                tooltip.css(
+                {
+                    left: left + width,
+                    top: top + (height / 2) - (tooltip.outerHeight() / 2)
+                });
+            }
+        }
+
+        function showTooltip()
+        {
+            LxDepthService.register();
 
             tooltip = angular.element('<div/>',
             {
-                class: 'tooltip tooltip--' + tooltipPosition + ' tooltip--' + tooltipColor
+                class: 'tooltip tooltip--' + lxTooltip.position
             });
 
             tooltipBackground = angular.element('<div/>',
@@ -35,127 +146,21 @@ angular.module('lumx.tooltip', [])
             tooltipLabel = angular.element('<span/>',
             {
                 class: 'tooltip__label',
-                text: tooltipContent
+                text: lxTooltip.tooltip
             });
 
-            tooltipTrigger
-                .bind('mouseenter', function()
-                {
-                    self.showTooltip();
-                });
-
-            tooltipTrigger
-                .bind('mouseleave', function()
-                {
-                    self.hideTooltip();
-                });
-        };
-
-        this.showTooltip = function()
-        {
-            var width = tooltipTrigger.outerWidth(),
-                height = tooltipTrigger.outerHeight(),
-                top = tooltipTrigger.offset().top,
-                left = tooltipTrigger.offset().left;
+            setTooltipPosition();
 
             tooltip
                 .append(tooltipBackground)
                 .append(tooltipLabel)
+                .css('z-index', LxDepthService.getDepth())
                 .appendTo('body');
 
-            if (tooltipPosition === 'top')
+            timer2 = $timeout(function()
             {
-                tooltip.css(
-                {
-                    left: left - (tooltip.outerWidth() / 2) + (width / 2),
-                    top: top - tooltip.outerHeight()
-                });
-            }
-            else if (tooltipPosition === 'bottom')
-            {
-                tooltip.css(
-                {
-                    left: left - (tooltip.outerWidth() / 2) + (width / 2),
-                    top: top + height
-                });
-            }
-            else if (tooltipPosition === 'left')
-            {
-                tooltip.css(
-                {
-                    left: left - tooltip.outerWidth(),
-                    top: top + (height / 2) - (tooltip.outerHeight() / 2)
-                });
-            }
-            else if (tooltipPosition === 'right')
-            {
-                tooltip.css(
-                {
-                    left: left + width,
-                    top: top + (height / 2) - (tooltip.outerHeight() / 2)
-                });
-            }
-
-            tooltip.addClass('tooltip--is-active');
-        };
-
-        this.update = function(content)
-        {
-            tooltipContent = content;
-            tooltipLabel.text(tooltipContent);
-        };
-
-        this.hideTooltip = function()
-        {
-            if (angular.isDefined(tooltip))
-            {
-                tooltip.removeClass('tooltip--is-active');
-
-                $timeout(function()
-                {
-                    tooltip.remove();
-                }, 200);
-            }
-        };
-
-        this.isDisplayed = function()
-        {
-            return angular.isDefined(tooltip) && tooltip.hasClass('tooltip--is-active');
-        };
-
-        $scope.$on('$destroy', function(scope)
-        {
-            if (angular.isDefined(tooltip))
-            {
-                tooltip.remove();
-            }
-        });
-    }])
-    .directive('lxTooltip', function()
-    {
-        return {
-            restrict: 'A',
-            controller: 'LxTooltipController',
-            link: function(scope, element, attrs, ctrl)
-            {
-                attrs.$observe('lxTooltip', function()
-                {
-                    if (attrs.lxTooltip)
-                    {
-                        if (ctrl.isDisplayed())
-                        {
-                            ctrl.update(attrs.lxTooltip);
-                        }
-                        else
-                        {
-                            ctrl.init(element, attrs);
-                        }
-                    }
-                    else
-                    {
-                        ctrl.hideTooltip();
-                    }
-                });
-            }
-        };
-    });
+                tooltip.addClass('tooltip--is-active');
+            });
+        }
+    }
+})();

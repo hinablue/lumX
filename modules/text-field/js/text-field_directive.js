@@ -1,109 +1,221 @@
-/* global angular */
-'use strict'; // jshint ignore:line
+(function()
+{
+    'use strict';
 
+    angular
+        .module('lumx.text-field')
+        .directive('lxTextField', lxTextField);
 
-angular.module('lumx.text-field', [])
-    .filter('unsafe', ['$sce', function($sce)
-    {
-        return $sce.trustAsHtml;
-    }])
-    .directive('lxTextField', ['$timeout', function($timeout)
+    lxTextField.$inject = ['$timeout'];
+
+    function lxTextField($timeout)
     {
         return {
             restrict: 'E',
-            scope: {
-                label: '@',
-                disabled: '&',
-                error: '&',
-                valid: '&',
-                fixedLabel: '&',
-                icon: '@',
-                theme: '@'
-            },
             templateUrl: 'text-field.html',
-            replace: true,
-            transclude: true,
-            link: function(scope, element, attrs, ctrl, transclude)
+            scope:
             {
-                if (angular.isUndefined(scope.theme))
+                allowClear: '=?lxAllowClear',
+                error: '=?lxError',
+                fixedLabel: '=?lxFixedLabel',
+                icon: '@?lxIcon',
+                label: '@lxLabel',
+                ngDisabled: '=?',
+                theme: '@?lxTheme',
+                valid: '=?lxValid'
+            },
+            link: link,
+            controller: LxTextFieldController,
+            controllerAs: 'lxTextField',
+            bindToController: true,
+            replace: true,
+            transclude: true
+        };
+
+        function link(scope, element, attrs, ctrl, transclude)
+        {
+            var backwardOneWay = ['icon', 'label', 'theme'];
+            var backwardTwoWay = ['error', 'fixedLabel', 'valid'];
+            var input;
+            var timer;
+
+            angular.forEach(backwardOneWay, function(attribute)
+            {
+                if (angular.isDefined(attrs[attribute]))
                 {
-                    scope.theme = 'light';
-                }
-
-                var modelController,
-                    $field;
-
-                scope.data = {
-                    focused: false,
-                    model: undefined
-                };
-
-                function focusUpdate()
-                {
-                    scope.data.focused = true;
-                    scope.$apply();
-                }
-
-                function blurUpdate()
-                {
-                    scope.data.focused = false;
-                    scope.$apply();
-                }
-
-                function modelUpdate()
-                {
-                    scope.data.model = modelController.$modelValue || $field.val();
-                }
-
-                function valueUpdate()
-                {
-                    modelUpdate();
-                    scope.$apply();
-                }
-
-                function updateTextareaHeight()
-                {
-                    $timeout(function()
+                    attrs.$observe(attribute, function(newValue)
                     {
-                        var tmpTextArea = angular.element('<textarea class="text-field__input" style="width: ' + $field.width() + 'px;">' + $field.val() + '</textarea>');
-                        tmpTextArea.appendTo('body');
-
-                        $field.css({ height: tmpTextArea[0].scrollHeight + 'px' });
-
-                        tmpTextArea.remove();
+                        scope.lxTextField[attribute] = newValue;
                     });
                 }
+            });
 
-                transclude(function()
+            angular.forEach(backwardTwoWay, function(attribute)
+            {
+                if (angular.isDefined(attrs[attribute]))
                 {
-                    $field = element.find('textarea');
-
-                    if ($field[0])
-                    {
-                        updateTextareaHeight();
-
-                        $field.on('cut paste drop keydown', function()
-                        {
-                            updateTextareaHeight();
-                        });
-                    }
-                    else
-                    {
-                        $field = element.find('input');
-                    }
-
-                    $field.addClass('text-field__input');
-                    $field.on('focus', focusUpdate);
-                    $field.on('blur', blurUpdate);
-                    $field.on('propertychange change click keyup input paste', valueUpdate);
-
-                    modelController = $field.data('$ngModelController');
-
                     scope.$watch(function()
                     {
-                        return modelController.$modelValue;
-                    }, modelUpdate);
+                        return scope.$parent.$eval(attrs[attribute]);
+                    }, function(newValue)
+                    {
+                        scope.lxTextField[attribute] = newValue;
+                    });
+                }
+            });
+
+            transclude(function()
+            {
+                input = element.find('textarea');
+
+                if (input[0])
+                {
+                    input.on('cut paste drop keydown', function()
+                    {
+                        timer = $timeout(ctrl.updateTextareaHeight);
+                    });
+                }
+                else
+                {
+                    input = element.find('input');
+                }
+
+                input.addClass('text-field__input');
+
+                ctrl.setInput(input);
+                ctrl.setModel(input.data('$ngModelController'));
+
+                input.on('focus', ctrl.focusInput);
+                input.on('blur', ctrl.blurInput);
+            });
+
+            scope.$on('$destroy', function()
+            {
+                $timeout.cancel(timer);
+                input.off();
+            });
+        }
+    }
+
+    LxTextFieldController.$inject = ['$scope', '$timeout'];
+
+    function LxTextFieldController($scope, $timeout)
+    {
+        var lxTextField = this;
+        var input;
+        var modelController;
+        var timer1;
+        var timer2;
+        var timer3;
+
+        lxTextField.blurInput = blurInput;
+        lxTextField.clearInput = clearInput;
+        lxTextField.focusInput = focusInput;
+        lxTextField.hasValue = hasValue;
+        lxTextField.setInput = setInput;
+        lxTextField.setModel = setModel;
+        lxTextField.updateTextareaHeight = updateTextareaHeight;
+
+        $scope.$watch(function()
+        {
+            return modelController.$viewValue;
+        }, function(newValue, oldValue)
+        {
+            if (angular.isDefined(newValue) && newValue)
+            {
+                lxTextField.isActive = true;
+            }
+            else
+            {
+                lxTextField.isActive = false;
+            }
+        });
+
+        $scope.$on('$destroy', function()
+        {
+            $timeout.cancel(timer1);
+            $timeout.cancel(timer2);
+            $timeout.cancel(timer3);
+        });
+
+        ////////////
+
+        function blurInput()
+        {
+            if (!hasValue())
+            {
+                $scope.$apply(function()
+                {
+                    lxTextField.isActive = false;
                 });
             }
-        };
-    }]);
+
+            $scope.$apply(function()
+            {
+                lxTextField.isFocus = false;
+            });
+        }
+
+        function clearInput()
+        {
+            modelController.$setViewValue(undefined);
+            modelController.$render();
+
+            timer1 = $timeout(function()
+            {
+                input.focus();
+            });
+        }
+
+        function focusInput()
+        {
+            $scope.$apply(function()
+            {
+                lxTextField.isActive = true;
+                lxTextField.isFocus = true;
+            });
+        }
+
+        function hasValue()
+        {
+            return input.val();
+        }
+
+        function init()
+        {
+            lxTextField.isActive = hasValue();
+            lxTextField.isFocus = false;
+        }
+
+        function setInput(_input)
+        {
+            input = _input;
+
+            timer2 = $timeout(init);
+
+            if (input.selector === 'textarea')
+            {
+                timer3 = $timeout(updateTextareaHeight);
+            }
+        }
+
+        function setModel(_modelControler)
+        {
+            modelController = _modelControler;
+        }
+
+        function updateTextareaHeight()
+        {
+            var tmpTextArea = angular.element('<textarea class="text-field__input" style="width: ' + input.width() + 'px;">' + input.val() + '</textarea>');
+
+            tmpTextArea.appendTo('body');
+
+            input.css(
+            {
+                height: tmpTextArea[0].scrollHeight + 'px'
+            });
+
+            tmpTextArea.remove();
+        }
+    }
+})();

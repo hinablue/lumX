@@ -1,111 +1,99 @@
-(function() {
+(function()
+{
     'use strict';
 
     angular
-        .module('lumx.checkbox', [])
+        .module('lumx.checkbox')
         .directive('lxCheckbox', lxCheckbox)
         .directive('lxCheckboxLabel', lxCheckboxLabel)
         .directive('lxCheckboxHelp', lxCheckboxHelp);
 
     function lxCheckbox()
     {
-        var directive =
-        {
+        return {
             restrict: 'E',
             templateUrl: 'checkbox.html',
-            scope: {
-                ngModel: '=',
+            scope:
+            {
+                lxColor: '@?',
                 name: '@?',
-                ngTrueValue: '@?',
-                ngFalseValue: '@?',
                 ngChange: '&?',
                 ngDisabled: '=?',
-                lxColor: '@?'
+                ngFalseValue: '@?',
+                ngModel: '=',
+                ngTrueValue: '@?'
             },
             controller: LxCheckboxController,
             controllerAs: 'lxCheckbox',
             bindToController: true,
-            transclude: true
+            transclude: true,
+            replace: true
         };
-
-        return directive;
     }
 
-    LxCheckboxController.$inject = ['LxUtils'];
+    LxCheckboxController.$inject = ['$scope', '$timeout', 'LxUtils'];
 
-    function LxCheckboxController(LxUtils)
+    function LxCheckboxController($scope, $timeout, LxUtils)
     {
         var lxCheckbox = this;
+        var checkboxId;
+        var checkboxHasChildren;
+        var timer;
 
-        //
-        // PRIVATE ATTRIBUTES
-        //
-
-        var _checkboxId;
-        var _checkboxHasChildren;
-
-        //
-        // PUBLIC ATTRIBUTES
-        //
-
-        // Public methods
         lxCheckbox.getCheckboxId = getCheckboxId;
         lxCheckbox.getCheckboxHasChildren = getCheckboxHasChildren;
         lxCheckbox.setCheckboxId = setCheckboxId;
         lxCheckbox.setCheckboxHasChildren = setCheckboxHasChildren;
+        lxCheckbox.triggerNgChange = triggerNgChange;
 
-        //
-        // PRIVATE METHODS
-        //
+        $scope.$on('$destroy', function()
+        {
+            $timeout.cancel(timer);
+        });
 
-        /**
-         * Initialize the controller
-         */
-        function _init()
+        init();
+
+        ////////////
+
+        function getCheckboxId()
+        {
+            return checkboxId;
+        }
+
+        function getCheckboxHasChildren()
+        {
+            return checkboxHasChildren;
+        }
+
+        function init()
         {
             setCheckboxId(LxUtils.generateUUID());
             setCheckboxHasChildren(false);
 
             lxCheckbox.ngTrueValue = angular.isUndefined(lxCheckbox.ngTrueValue) ? true : lxCheckbox.ngTrueValue;
             lxCheckbox.ngFalseValue = angular.isUndefined(lxCheckbox.ngFalseValue) ? false : lxCheckbox.ngFalseValue;
-            lxCheckbox.lxColor =  angular.isUndefined(lxCheckbox.lxColor) ? 'accent' : lxCheckbox.lxColor;
+            lxCheckbox.lxColor = angular.isUndefined(lxCheckbox.lxColor) ? 'accent' : lxCheckbox.lxColor;
         }
 
-        //
-        // PUBLIC METHODS
-        //
-
-        function getCheckboxId()
+        function setCheckboxId(_checkboxId)
         {
-            return _checkboxId;
+            checkboxId = _checkboxId;
         }
 
-        function getCheckboxHasChildren()
+        function setCheckboxHasChildren(_checkboxHasChildren)
         {
-            return _checkboxHasChildren;
+            checkboxHasChildren = _checkboxHasChildren;
         }
 
-        function setCheckboxId(checkboxId)
+        function triggerNgChange()
         {
-            _checkboxId = checkboxId;
+            timer = $timeout(lxCheckbox.ngChange);
         }
-
-        function setCheckboxHasChildren(checkboxHasChildren)
-        {
-            _checkboxHasChildren = checkboxHasChildren;
-        }
-
-        //
-        // INITIALIZATION
-        //
-
-        _init();
     }
 
     function lxCheckboxLabel()
     {
-        var directive =
-        {
+        return {
             restrict: 'AE',
             require: ['^lxCheckbox', '^lxCheckboxLabel'],
             templateUrl: 'checkbox-label.html',
@@ -117,8 +105,6 @@
             replace: true
         };
 
-        return directive;
-
         function link(scope, element, attrs, ctrls)
         {
             ctrls[0].setCheckboxHasChildren(true);
@@ -129,47 +115,32 @@
     function LxCheckboxLabelController()
     {
         var lxCheckboxLabel = this;
+        var checkboxId;
 
-        //
-        // PRIVATE ATTRIBUTES
-        //
-
-        var _checkboxId;
-
-        //
-        // PUBLIC ATTRIBUTES
-        //
-
-        // Public methods
         lxCheckboxLabel.getCheckboxId = getCheckboxId;
         lxCheckboxLabel.setCheckboxId = setCheckboxId;
 
-        //
-        // PUBLIC METHODS
-        //
+        ////////////
 
         function getCheckboxId()
         {
-            return _checkboxId;
+            return checkboxId;
         }
 
-        function setCheckboxId(checkboxId)
+        function setCheckboxId(_checkboxId)
         {
-            _checkboxId = checkboxId;
+            checkboxId = _checkboxId;
         }
     }
 
     function lxCheckboxHelp()
     {
-        var directive =
-        {
+        return {
             restrict: 'AE',
             require: '^lxCheckbox',
             templateUrl: 'checkbox-help.html',
             transclude: true,
             replace: true
         };
-
-        return directive;
     }
 })();

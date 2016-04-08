@@ -39,7 +39,7 @@
 // Material design icon
 @mixin mdi() {
     display: inline-block;
-    font: normal normal normal #{$mdi-font-size-base}/1 MaterialDesignIcons;
+    font: normal normal normal #{$mdi-font-size-base}/1 '#{$mdi-font-name}';
     font-size: inherit;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
@@ -50,4 +50,25 @@
 @mixin mdi-icon($icon) {
     $icon-index: index($names, $icon);
     content: char(nth($hexes, $icon-index));
+}
+
+
+
+
+
+// Text field reset
+@mixin text-field-reset() {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    overflow: hidden;
+    cursor: text;
+    @include appearance(none);
+
+    &:focus {
+        outline: none;
+    }
 }
